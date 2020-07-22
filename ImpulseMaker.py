@@ -242,7 +242,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             end_pos = 75
             motor = motor2
 
-            motor.set_velocity_parameters(0, 10, cls.annealValueBox.value())
+
             Laser. setPower(cls.doubleSpinBox.value())
             Shutter.setMode(1)
             if Shutter.getToggle() == "1":
@@ -250,6 +250,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
             cls.logText("Moving to start position")
             motor.move_to(start_pos, True)
+            motor.set_velocity_parameters(0, 10, cls.annealValueBox.value())
             Laser.setOn()
             cls.logText("Heating laser")
 #            time.sleep(cls.timeToHeat)
