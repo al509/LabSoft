@@ -7,11 +7,34 @@ import sys
 from ui import MainWindow as ui
 from libs import SynradLaser, SC10Shutter
 import time
+import threading
 
+
+
+class Worker(QtCore.QRunnable):
+
+
+    def __init__(self, fn, *args, **kwargs):
+        super(Worker, self).__init__()
+        # Store constructor arguments (re-used for processing)
+        self.fn = fn
+        self.args = args
+        self.kwargs = kwargs
+
+    def run(self):
+
+        self.fn(*self.args, **self.kwargs)
+        
+        
 
 
 class MainApp(QMainWindow, ui.Ui_MainWindow):
     def __init__(cls):
+         cls.threadpool = QtCore.QThreadPool()
+
+         cls.isNotStarted = threading.Event()
+         cls.isNotStarted.set()
+     
          QMainWindow.__init__(cls)
          ui.Ui_MainWindow.__init__(cls)
 
@@ -271,6 +294,19 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             except:
                 pass
             cls.logWarningText("Process failed: "+ str(sys.exc_info()[1]))
+
+    
+    def startStopButtonClicked(self):
+        try:
+            if self.isNotStarted.isSet() == False:
+                self.isNotStarted.set()
+                return
+
+            else:
+                worker = Worker(self.start)
+                self.threadpool.start(worker)
+        except:
+            self.logWarningText(str(sys.exc_info()[1]))
 
 
     def start(cls):
