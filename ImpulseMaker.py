@@ -9,6 +9,7 @@ from libs import SynradLaser, SC10Shutter
 import time
 
 
+
 class MainApp(QMainWindow, ui.Ui_MainWindow):
     def __init__(cls):
          QMainWindow.__init__(cls)
@@ -16,7 +17,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
          cls.setupUi(cls)
          cls.setupBox()
-         cls.setupButtons()T
+         cls.setupButtons()
          cls.setupTable()
          cls.setupMotor()
 
@@ -38,6 +39,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         cls.MoveStagesButton.clicked.connect(cls.moveStagesClicked)
         cls.startButton.clicked.connect(cls.start)
         cls.fileButton.clicked.connect(cls.fileClicked)
+        cls.startAnnealButton.clicked.connect(cls.startAnneal)
 
     def setupTable(cls):
         cls.tableWidget.setColumnCount(2)
@@ -110,7 +112,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                 except:
                     if DEBUG:
                         self.logWarningText("Laser was not connected on "+p.device+": "+str(sys.exc_info()[1]))
-                        Laser.close()
+                    Laser.close()
                     pass
 
             if not (isShutterConnected):
@@ -236,6 +238,72 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             cls.tableWidget.setItem(i, 0, x_item)
             cls.tableWidget.setItem(i, 1, n_item)
             i+=1
+            
+    def startAnneal(cls):
+        try:
+            cls.logText("Anneal started")
+            start_pos = 55
+            end_pos = 75
+            timeToHeat = 30
+            motor = motor2
+            
+            motor.set_velocity_parameters(0, 10, cls.annealValueBox.value())
+            Laser. setPower(cls.doubleSpinBox.value())
+            Shutter.setMode(3)
+            if Shutter.getToggle == "1":
+                Shutter.setToggle()
+            
+            cls.logText("Moving to start position")
+            motor.move_to(start_pos, True)
+            Laser.setOn()  
+            cls.logText("Heating laser")
+            time.sleep(timeToHeat)
+            cls.logText("Laser heated. Starting to burn")
+            Shutter.setToggle()
+            motor.move_to(end_pos, True)
+            Shutter.setToggle()
+            Laser.setOff()
+            cls.logText("Anneal finished")
+        except:
+            try:
+                Laser.setOff()
+            except:
+                pass
+            cls.logWarningText("Process failed: "+ str(sys.exc_info()[1]))
+        
+
+    def startAnneal(cls):
+        try:
+            cls.logText("Anneal started")
+            start_pos = 55
+            end_pos = 75
+            timeToHeat = 30
+            motor = motor2
+
+            motor.set_velocity_parameters(0, 10, cls.annealValueBox.value())
+            Laser. setPower(cls.doubleSpinBox.value())
+            Shutter.setMode(3)
+            if Shutter.getToggle == "1":
+                Shutter.setToggle()
+
+            cls.logText("Moving to start position")
+            motor.move_to(start_pos, True)
+            Laser.setOn()
+            cls.logText("Heating laser")
+            time.sleep(timeToHeat)
+            cls.logText("Laser heated. Starting to burn")
+            Shutter.setToggle()
+            motor.move_to(end_pos, True)
+            Shutter.setToggle()
+            Laser.setOff()
+            cls.logText("Anneal finished")
+        except:
+            try:
+                Laser.setOff()
+            except:
+                pass
+            cls.logWarningText("Process failed: "+ str(sys.exc_info()[1]))
+
 
     def start(self):
         try:

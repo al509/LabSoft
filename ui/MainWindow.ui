@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Impulse taper maker v0.3 (21.07.2020)</string>
+   <string>Impulse taper maker v0.35 (22.07.2020)</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QGroupBox" name="ConnectionBox">
@@ -152,117 +152,7 @@
       <item row="0" column="0">
        <widget class="QLabel" name="fileLabel">
         <property name="text">
-         <string>Coordinates File:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="powerLabel">
-        <property name="text">
-         <string>Laser Power:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <layout class="QHBoxLayout" name="powerLayout">
-        <item>
-         <widget class="QDoubleSpinBox" name="powerSpinBox">
-          <property name="decimals">
-           <number>1</number>
-          </property>
-          <property name="singleStep">
-           <double>0.500000000000000</double>
-          </property>
-          <property name="value">
-           <double>10.000000000000000</double>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="powerPercentLabel">
-          <property name="text">
-           <string>%</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="openTimeLabel">
-        <property name="text">
-         <string>Shutter open time:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <layout class="QHBoxLayout" name="openTimeLayout">
-        <item>
-         <widget class="QSpinBox" name="openSpinBox">
-          <property name="maximum">
-           <number>999999</number>
-          </property>
-          <property name="singleStep">
-           <number>100</number>
-          </property>
-          <property name="value">
-           <number>1000</number>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="openTimeMsLabel">
-          <property name="text">
-           <string>ms</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item row="3" column="1">
-       <layout class="QHBoxLayout" name="periodLayout">
-        <item>
-         <widget class="QSpinBox" name="periodSpinBox">
-          <property name="maximum">
-           <number>999999</number>
-          </property>
-          <property name="singleStep">
-           <number>100</number>
-          </property>
-          <property name="value">
-           <number>2000</number>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="periodMsLabel">
-          <property name="text">
-           <string>ms</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="periodLabel">
-        <property name="text">
-         <string>Shutter period:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1">
-       <widget class="QPushButton" name="startButton">
-        <property name="text">
-         <string>Start/Stop</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0">
-       <widget class="QPushButton" name="saveButton">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>Save config</string>
+         <string>Coordinates file:</string>
         </property>
        </widget>
       </item>
@@ -306,6 +196,116 @@
          </layout>
         </item>
        </layout>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="powerLabel">
+        <property name="text">
+         <string>Laser power:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <layout class="QHBoxLayout" name="powerLayout" stretch="1,0">
+        <item>
+         <widget class="QDoubleSpinBox" name="powerSpinBox">
+          <property name="decimals">
+           <number>1</number>
+          </property>
+          <property name="singleStep">
+           <double>0.500000000000000</double>
+          </property>
+          <property name="value">
+           <double>10.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="powerPercentLabel">
+          <property name="text">
+           <string>%</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="openTimeLabel">
+        <property name="text">
+         <string>Shutter open time:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <layout class="QHBoxLayout" name="openTimeLayout" stretch="1,0">
+        <item>
+         <widget class="QSpinBox" name="openSpinBox">
+          <property name="maximum">
+           <number>999999</number>
+          </property>
+          <property name="singleStep">
+           <number>100</number>
+          </property>
+          <property name="value">
+           <number>100</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="openTimeMsLabel">
+          <property name="text">
+           <string>ms</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="periodLabel">
+        <property name="text">
+         <string>Shutter period:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <layout class="QHBoxLayout" name="periodLayout" stretch="1,0">
+        <item>
+         <widget class="QSpinBox" name="periodSpinBox">
+          <property name="maximum">
+           <number>999999</number>
+          </property>
+          <property name="singleStep">
+           <number>100</number>
+          </property>
+          <property name="value">
+           <number>200</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="periodMsLabel">
+          <property name="text">
+           <string>ms</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="4" column="0">
+       <widget class="QPushButton" name="saveButton">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Save config</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QPushButton" name="startButton">
+        <property name="text">
+         <string>Start/stop</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -371,6 +371,103 @@
         </widget>
        </item>
       </layout>
+     </widget>
+     <widget class="QGroupBox" name="annealBox">
+      <property name="geometry">
+       <rect>
+        <x>270</x>
+        <y>60</y>
+        <width>211</width>
+        <height>111</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Fiber annealing</string>
+      </property>
+      <widget class="QWidget" name="verticalLayoutWidget_2">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>19</y>
+         <width>194</width>
+         <height>81</height>
+        </rect>
+       </property>
+       <layout class="QVBoxLayout" name="annealLayout">
+        <item>
+         <layout class="QHBoxLayout" name="annealPowerLayout" stretch="1,0,0">
+          <property name="spacing">
+           <number>6</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="annealPowerLabel">
+            <property name="text">
+             <string>Laser power:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QDoubleSpinBox" name="doubleSpinBox">
+            <property name="decimals">
+             <number>1</number>
+            </property>
+            <property name="singleStep">
+             <double>0.500000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="annealPercentlabel">
+            <property name="layoutDirection">
+             <enum>Qt::LeftToRight</enum>
+            </property>
+            <property name="text">
+             <string>%  </string>
+            </property>
+            <property name="textFormat">
+             <enum>Qt::AutoText</enum>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="annealVelocityLayout" stretch="1,0,0">
+          <item>
+           <widget class="QLabel" name="annealVelocityLabel">
+            <property name="text">
+             <string>Motor velocity:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QDoubleSpinBox" name="annealValueBox">
+            <property name="value">
+             <double>5.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="annealPercentLabel">
+            <property name="text">
+             <string>mm/s</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QPushButton" name="startAnnealButton">
+          <property name="text">
+           <string>Start</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </widget>
     <widget class="QWidget" name="tab_2">
