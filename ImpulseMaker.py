@@ -23,6 +23,8 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
          cls.autoDetectClicked()
 
+         cls.timeToHeat = 60
+
     def setupBox(cls):
         cls.laserPortLineEdit.setVisible(False)
         cls.shutterPortLineEdit.setVisible(False)
@@ -144,10 +146,8 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
     def stagesToZerosClicked(self):
         try:
 
-            motor1.set_velocity_parameters(0, 3.5, 4.5)
             motor2.set_velocity_parameters(0, 3.5, 4.5)
 
-            motor1.move_home(False)
             motor2.move_home(True)
             self.logText('Stages moved to zeros')
         except:
@@ -155,16 +155,12 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
     def stagesToHomeClicked(self):
         try:
-            motor1.backlash_distance(0)
             motor2.backlash_distance(0)
 
-            motor1.set_velocity_parameters(0, 3.5, 4.5)
             motor2.set_velocity_parameters(0, 3.5, 4.5)
 
-            Home_value1 = 95
-            Home_value2 = 30
+            Home_value2 = 53
 
-            motor1.move_to(Home_value1, False)
             motor2.move_to(Home_value2, True)
             self.logText('Stages moved to start position')
         except:
@@ -238,46 +234,12 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             cls.tableWidget.setItem(i, 0, x_item)
             cls.tableWidget.setItem(i, 1, n_item)
             i+=1
-            
-    def startAnneal(cls):
-        try:
-            cls.logText("Anneal started")
-            start_pos = 55
-            end_pos = 75
-            timeToHeat = 30
-            motor = motor2
-            
-            motor.set_velocity_parameters(0, 10, cls.annealValueBox.value())
-            Laser. setPower(cls.doubleSpinBox.value())
-            Shutter.setMode(3)
-            if Shutter.getToggle == "1":
-                Shutter.setToggle()
-            
-            cls.logText("Moving to start position")
-            motor.move_to(start_pos, True)
-            Laser.setOn()  
-            cls.logText("Heating laser")
-            time.sleep(timeToHeat)
-            cls.logText("Laser heated. Starting to burn")
-            Shutter.setToggle()
-            motor.move_to(end_pos, True)
-            Shutter.setToggle()
-            Laser.setOff()
-            cls.logText("Anneal finished")
-        except:
-            try:
-                Laser.setOff()
-            except:
-                pass
-            cls.logWarningText("Process failed: "+ str(sys.exc_info()[1]))
-        
 
     def startAnneal(cls):
         try:
             cls.logText("Anneal started")
-            start_pos = 55
+            start_pos = 53
             end_pos = 75
-            timeToHeat = 30
             motor = motor2
 
             motor.set_velocity_parameters(0, 10, cls.annealValueBox.value())
@@ -290,7 +252,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             motor.move_to(start_pos, True)
             Laser.setOn()
             cls.logText("Heating laser")
-            time.sleep(timeToHeat)
+#            time.sleep(cls.timeToHeat)
             cls.logText("Laser heated. Starting to burn")
             Shutter.setToggle()
             motor.move_to(end_pos, True)
@@ -305,33 +267,41 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             cls.logWarningText("Process failed: "+ str(sys.exc_info()[1]))
 
 
-    def start(self):
+    def start(cls):
         try:
             motor = motor2
 
-            power = self.powerSpinBox.value()
-            Topen = self.openSpinBox.value()
-            Tperiod = self.periodSpinBox.value()
+            power = cls.powerSpinBox.value()
+            Topen = cls.openSpinBox.value()
+            Tperiod = cls.periodSpinBox.value()
 
             Laser.setPower(power)
+
+            Shutter.setMode(3)
+            if Shutter.getToggle == "1":
+                Shutter.setToggle()
             Laser.setOn()
-            for i in range(0, self.rowNumberBox.value()):
+            cls.logText("Heating laser")
+            time.sleep(cls.timeToHeat)
+            cls.logText("Laser heated. Starting process")
+
+            for i in range(0, cls.rowNumberBox.value()):
 
 
-                x_item = self.tableWidget.item(i, 0)
-                n_item = self.tableWidget.item(i, 1)
+                x_item = cls.tableWidget.item(i, 0)
+                n_item = cls.tableWidget.item(i, 1)
                 x = (float(x_item.text()))
                 n = (int(n_item.text()))
-                self.logText("Processing coordinate "
+                cls.logText("Processing coordinate "
                              + str(x) + " with " + str(n) + " times")
 
                 motor.move_to(x, True)
-                self.shutUp(n, Topen, Tperiod - Topen)
+                cls.shutUp(n, Topen, Tperiod - Topen)
 
             Laser.setOff()
-            self.logText("Completed")
+            cls.logText("Completed")
         except:
-            self.logWarningText("Process failed: "+ str(sys.exc_info()[1]))
+            cls.logWarningText("Process failed: "+ str(sys.exc_info()[1]))
 
             try:
                 Laser.setOff()
