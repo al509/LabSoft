@@ -146,10 +146,8 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
     def stagesToZerosClicked(self):
         try:
 
-            motor1.set_velocity_parameters(0, 3.5, 4.5)
             motor2.set_velocity_parameters(0, 3.5, 4.5)
 
-            motor1.move_home(False)
             motor2.move_home(True)
             self.logText('Stages moved to zeros')
         except:
@@ -157,16 +155,12 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
     def stagesToHomeClicked(self):
         try:
-            motor1.backlash_distance(0)
             motor2.backlash_distance(0)
 
-            motor1.set_velocity_parameters(0, 3.5, 4.5)
             motor2.set_velocity_parameters(0, 3.5, 4.5)
 
-            Home_value1 = 95
-            Home_value2 = 30
+            Home_value2 = 53
 
-            motor1.move_to(Home_value1, False)
             motor2.move_to(Home_value2, True)
             self.logText('Stages moved to start position')
         except:
@@ -244,7 +238,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
     def startAnneal(cls):
         try:
             cls.logText("Anneal started")
-            start_pos = 55
+            start_pos = 53
             end_pos = 75
             motor = motor2
 
@@ -258,7 +252,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             motor.move_to(start_pos, True)
             Laser.setOn()
             cls.logText("Heating laser")
-            time.sleep(cls.timeToHeat)
+#            time.sleep(cls.timeToHeat)
             cls.logText("Laser heated. Starting to burn")
             Shutter.setToggle()
             motor.move_to(end_pos, True)
