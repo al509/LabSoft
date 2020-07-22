@@ -392,12 +392,28 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         Shutter.setToggle()
         time.sleep(N * (Topen + Tclose)/1000)
 
-def main():
+import sys
+if 'init_modules' in globals(  ):
+    # second or subsequent run: remove all but initially loaded modules
+    for m in sys.modules.keys(  ):
+        if m not in init_modules:
+            del(sys.modules[m])
+else:
+    # first run: find out which modules were initially loaded
+    init_modules = sys.modules.keys(  )
 
-    app = QApplication(sys.argv)
-    form = MainApp()
-    form.show()
-    sys.exit(app.exec_())
+
+def main():
+    if not QApplication.instance():
+        app = QApplication(sys.argv)
+    else:
+        app = QApplication.instance()
+    main = MainApp()
+    main.show()
+
+    return main
+
 
 if __name__ == '__main__':
-    main()
+
+    m = main()
