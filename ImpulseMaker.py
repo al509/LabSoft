@@ -22,8 +22,8 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
          cls.setupMotor()
 
          cls.autoDetectClicked()
-         
-         timeToHeat = 60
+
+         cls.timeToHeat = 60
 
     def setupBox(cls):
         cls.laserPortLineEdit.setVisible(False)
@@ -240,23 +240,23 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             cls.tableWidget.setItem(i, 0, x_item)
             cls.tableWidget.setItem(i, 1, n_item)
             i+=1
-            
+
     def startAnneal(cls):
         try:
             cls.logText("Anneal started")
             start_pos = 55
             end_pos = 75
             motor = motor2
-            
+
             motor.set_velocity_parameters(0, 10, cls.annealValueBox.value())
             Laser. setPower(cls.doubleSpinBox.value())
             Shutter.setMode(3)
             if Shutter.getToggle == "1":
                 Shutter.setToggle()
-            
+
             cls.logText("Moving to start position")
             motor.move_to(start_pos, True)
-            Laser.setOn()  
+            Laser.setOn()
             cls.logText("Heating laser")
             time.sleep(cls.timeToHeat)
             cls.logText("Laser heated. Starting to burn")
@@ -282,15 +282,15 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             Tperiod = cls.periodSpinBox.value()
 
             Laser.setPower(power)
-            
+
             Shutter.setMode(3)
             if Shutter.getToggle == "1":
                 Shutter.setToggle()
-            Laser.setOn()  
+            Laser.setOn()
             cls.logText("Heating laser")
             time.sleep(cls.timeToHeat)
             cls.logText("Laser heated. Starting process")
-            
+
             for i in range(0, cls.rowNumberBox.value()):
 
 
