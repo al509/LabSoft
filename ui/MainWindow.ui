@@ -334,7 +334,7 @@
        <rect>
         <x>10</x>
         <y>10</y>
-        <width>251</width>
+        <width>291</width>
         <height>371</height>
        </rect>
       </property>
@@ -342,7 +342,7 @@
      <widget class="QWidget" name="horizontalLayoutWidget">
       <property name="geometry">
        <rect>
-        <x>270</x>
+        <x>310</x>
         <y>10</y>
         <width>211</width>
         <height>31</height>
@@ -375,7 +375,7 @@
      <widget class="QGroupBox" name="annealBox">
       <property name="geometry">
        <rect>
-        <x>270</x>
+        <x>310</x>
         <y>60</y>
         <width>211</width>
         <height>111</height>
@@ -390,7 +390,7 @@
          <x>10</x>
          <y>19</y>
          <width>194</width>
-         <height>81</height>
+         <height>83</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="annealLayout">
@@ -422,7 +422,7 @@
              <enum>Qt::LeftToRight</enum>
             </property>
             <property name="text">
-             <string>%  </string>
+             <string>%     </string>
             </property>
             <property name="textFormat">
              <enum>Qt::AutoText</enum>
@@ -460,11 +460,22 @@
          </layout>
         </item>
         <item>
-         <widget class="QPushButton" name="startAnnealButton">
-          <property name="text">
-           <string>Start</string>
-          </property>
-         </widget>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QPushButton" name="toggleShutterButton">
+            <property name="text">
+             <string>Toggle shutter</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="startAnnealButton">
+            <property name="text">
+             <string>Start</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>

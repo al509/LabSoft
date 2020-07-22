@@ -65,6 +65,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         cls.startButton.clicked.connect(cls.startClicked)
         cls.fileButton.clicked.connect(cls.fileClicked)
         cls.startAnnealButton.clicked.connect(cls.startAnnealClicked)
+        cls.toggleShutterButton.clicked.connect(cls.toggleShutter)
 
     def setupTable(cls):
         cls.tableWidget.setColumnCount(2)
@@ -374,7 +375,21 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         self.LogField.append("<span style=\" font-size:8pt; font-weight:600; color:#ff0000;\" >"
                              + ">" + text + "</span>")
 
-
+    def toggleShutter(cls):
+        try:
+            Shutter.setMode(1)
+            Shutter.setToggle()
+        except:
+            cls.logWarningText(str(sys.exc_info()[1]))
+            
+    def shutUp(self, N, Topen, Tclose):
+        Shutter.setMode(4)
+        Shutter.setRepeat(N)
+        Shutter.setOpenTime(Topen)
+        Shutter.setCloseTime(Tclose)
+        Shutter.setToggle()
+        time.sleep(N * (Topen + Tclose)/1000)
+    
     def __del__(self):
         try:
             Laser.close()
@@ -384,14 +399,9 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         except:
             print(str(sys.exc_info()[1]))
 
-    def shutUp(self, N, Topen, Tclose):
-        Shutter.setMode(4)
-        Shutter.setRepeat(N)
-        Shutter.setOpenTime(Topen)
-        Shutter.setCloseTime(Tclose)
-        Shutter.setToggle()
-        time.sleep(N * (Topen + Tclose)/1000)
 
+        
+            
 if 'init_modules' in globals(  ):
     # second or subsequent run: remove all but initially loaded modules
     for m in sys.modules.keys(  ):
@@ -409,7 +419,7 @@ def main():
         app = QApplication.instance()
     main = MainApp()
     main.show()
-
+    sys.exit(app.exec())
     return main
 
 
