@@ -23,7 +23,8 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
          cls.autoDetectClicked()
 
-         cls.timeToHeat = 60
+
+         cls.timeToHeat = 30
 
     def setupBox(cls):
         cls.laserPortLineEdit.setVisible(False)
@@ -244,8 +245,8 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
             motor.set_velocity_parameters(0, 10, cls.annealValueBox.value())
             Laser. setPower(cls.doubleSpinBox.value())
-            Shutter.setMode(3)
-            if Shutter.getToggle == "1":
+            Shutter.setMode(1)
+            if Shutter.getToggle() == "1":
                 Shutter.setToggle()
 
             cls.logText("Moving to start position")
