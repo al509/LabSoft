@@ -23,6 +23,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
          cls.autoDetectClicked()
 
+
          cls.timeToHeat = 30
 
     def setupBox(cls):
