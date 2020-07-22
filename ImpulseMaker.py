@@ -301,7 +301,6 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
     def start(cls):
         try:
-            cls.logText("Process started")
             motor = motor2
 
             power = cls.powerSpinBox.value()
@@ -393,7 +392,6 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         Shutter.setToggle()
         time.sleep(N * (Topen + Tclose)/1000)
 
-import sys
 if 'init_modules' in globals(  ):
     # second or subsequent run: remove all but initially loaded modules
     for m in sys.modules.keys(  ):
