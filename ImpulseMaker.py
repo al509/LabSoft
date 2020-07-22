@@ -301,6 +301,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
     def start(cls):
         try:
+            cls.logText("Process started")
             motor = motor2
 
             power = cls.powerSpinBox.value()
