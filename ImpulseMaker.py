@@ -42,7 +42,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
 
          cls.timeToHeat = 30
-         
+
          cls.threadpool = QtCore.QThreadPool()
 
          cls.isNotStarted = threading.Event()
@@ -272,8 +272,6 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             start_pos = 53
             end_pos = 75
             motor = motor2
-
-            motor.set_velocity_parameters(0, 10, cls.annealValueBox.value())
             Laser. setPower(cls.doubleSpinBox.value())
             Shutter.setMode(1)
             if Shutter.getToggle() == "1":
@@ -281,6 +279,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
             cls.logText("Moving to start position")
             motor.move_to(start_pos, True)
+            motor.set_velocity_parameters(0, 10, cls.annealValueBox.value())
             Laser.setOn()
             cls.logText("Starting to burn")
             Shutter.setToggle()
@@ -289,8 +288,8 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             Laser.setOff()
             cls.logText("Anneal finished")
             cls.startAnnealButton.setEnabled(True)
-            
-            
+
+
         except:
             try:
                 Laser.setOff()
@@ -307,6 +306,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             power = cls.powerSpinBox.value()
             Topen = cls.openSpinBox.value()
             Tperiod = cls.periodSpinBox.value()
+            cls.isNotStarted.clear()
 
             Laser.setPower(power)
 
@@ -315,10 +315,10 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                 Shutter.setToggle()
             Laser.setOn()
             cls.logText("Heating laser")
-            
+
             cls.isNotStarted.wait(cls.timeToHeat)
             if cls.isNotStarted.isSet():
-                Laser.SetOff()
+                Laser.setOff()
                 cls.logWarningText("Interrupted")
                 return
             cls.logText("Laser heated. Starting process")
@@ -335,14 +335,15 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
                 motor.move_to(x, True)
                 if cls.isNotStarted.isSet():
-                    Laser.SetOff()
+                    Laser.setOff()
                     cls.logWarningText("Interrupted")
                     return
-                
+
                 cls.shutUp(n, Topen, Tperiod - Topen)
 
             Laser.setOff()
             cls.logText("Completed")
+            cls.isNotStarted.set()
         except:
             cls.logWarningText("Process failed: "+ str(sys.exc_info()[1]))
 
@@ -350,7 +351,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                 Laser.setOff()
             except:
                 pass
-            
+
     def startClicked(self):
         try:
             if self.isNotStarted.isSet() == False:
@@ -362,8 +363,8 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                 self.threadpool.start(worker)
         except:
             self.logWarningText(str(sys.exc_info()[1]))
-            
-        
+
+
 
     def logText(self, text):
         self.LogField.append(">" + text)
