@@ -7,6 +7,23 @@ import sys
 from ui import MainWindow as ui
 from libs import SynradLaser, SC10Shutter
 import time
+import threading
+
+
+
+class Worker(QtCore.QRunnable):
+
+
+    def __init__(self, fn, *args, **kwargs):
+        super(Worker, self).__init__()
+        # Store constructor arguments (re-used for processing)
+        self.fn = fn
+        self.args = args
+        self.kwargs = kwargs
+
+    def run(self):
+
+        self.fn(*self.args, **self.kwargs)
 
 
 
@@ -25,6 +42,11 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
 
          cls.timeToHeat = 30
+         
+         cls.threadpool = QtCore.QThreadPool()
+
+         cls.isNotStarted = threading.Event()
+         cls.isNotStarted.set()
 
     def setupBox(cls):
         cls.laserPortLineEdit.setVisible(False)
@@ -40,9 +62,9 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         cls.StagesToZerosButton.clicked.connect(cls.stagesToZerosClicked)
         cls.StagesToHomeButton.clicked.connect(cls.stagesToHomeClicked)
         cls.MoveStagesButton.clicked.connect(cls.moveStagesClicked)
-        cls.startButton.clicked.connect(cls.start)
+        cls.startButton.clicked.connect(cls.startClicked)
         cls.fileButton.clicked.connect(cls.fileClicked)
-        cls.startAnnealButton.clicked.connect(cls.startAnneal)
+        cls.startAnnealButton.clicked.connect(cls.startAnnealClicked)
 
     def setupTable(cls):
         cls.tableWidget.setColumnCount(2)
@@ -236,9 +258,17 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             cls.tableWidget.setItem(i, 1, n_item)
             i+=1
 
+    def startAnnealClicked(cls):
+        try:
+            worker = Worker(cls.startAnneal)
+            cls.threadpool.start(worker)
+        except:
+            cls.logWarningText(str(sys.exc_info()[1]))
+
     def startAnneal(cls):
         try:
             cls.logText("Anneal started")
+            cls.startAnnealButton.setEnabled(False)
             start_pos = 53
             end_pos = 75
             motor = motor2
@@ -252,20 +282,22 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             cls.logText("Moving to start position")
             motor.move_to(start_pos, True)
             Laser.setOn()
-            cls.logText("Heating laser")
-#            time.sleep(cls.timeToHeat)
-            cls.logText("Laser heated. Starting to burn")
+            cls.logText("Starting to burn")
             Shutter.setToggle()
             motor.move_to(end_pos, True)
             Shutter.setToggle()
             Laser.setOff()
             cls.logText("Anneal finished")
+            cls.startAnnealButton.setEnabled(True)
+            
+            
         except:
             try:
                 Laser.setOff()
             except:
                 pass
             cls.logWarningText("Process failed: "+ str(sys.exc_info()[1]))
+            cls.startAnnealButton.setEnabled(True)
 
 
     def start(cls):
@@ -283,7 +315,12 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                 Shutter.setToggle()
             Laser.setOn()
             cls.logText("Heating laser")
-            time.sleep(cls.timeToHeat)
+            
+            cls.isNotStarted.wait(cls.timeToHeat)
+            if cls.isNotStarted.isSet():
+                Laser.SetOff()
+                cls.logWarningText("Interrupted")
+                return
             cls.logText("Laser heated. Starting process")
 
             for i in range(0, cls.rowNumberBox.value()):
@@ -297,6 +334,11 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                              + str(x) + " with " + str(n) + " times")
 
                 motor.move_to(x, True)
+                if cls.isNotStarted.isSet():
+                    Laser.SetOff()
+                    cls.logWarningText("Interrupted")
+                    return
+                
                 cls.shutUp(n, Topen, Tperiod - Topen)
 
             Laser.setOff()
@@ -308,6 +350,20 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                 Laser.setOff()
             except:
                 pass
+            
+    def startClicked(self):
+        try:
+            if self.isNotStarted.isSet() == False:
+                self.isNotStarted.set()
+                return
+
+            else:
+                worker = Worker(self.start)
+                self.threadpool.start(worker)
+        except:
+            self.logWarningText(str(sys.exc_info()[1]))
+            
+        
 
     def logText(self, text):
         self.LogField.append(">" + text)
