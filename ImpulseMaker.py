@@ -29,30 +29,32 @@ class Worker(QtCore.QRunnable):
 
 class MainApp(QMainWindow, ui.Ui_MainWindow):
     def __init__(cls):
-         
-        
+
+
          QMainWindow.__init__(cls)
          ui.Ui_MainWindow.__init__(cls)
-         
+
          cls.threadpool = QtCore.QThreadPool()
          cls.isNotStarted = threading.Event()
          cls.isNotStarted.set()
-         
+
          global Laser
          global Shutter
          global Motor
-         
+
          cls.timeToHeat = 30
-         
-         
+
+
          cls.setupUi(cls)
          cls.setupBox()
          cls.setupButtons()
          cls.setupTable()
-         
-         worker = Worker(cls.setupMotor)
-         cls.threadpool.start(worker)
-         cls.autoDetectClicked()
+
+         worker1 = Worker(cls.setupMotor)
+         cls.threadpool.start(worker1)
+         worker2 = Worker(cls.autoDetectClicked)
+         cls.threadpool.start(worker2)
+
 
 
 
