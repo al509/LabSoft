@@ -11,15 +11,15 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Impulse taper maker v0.35 (22.07.2020)</string>
+   <string>Impulse taper maker v0.5 (23.07.2020)</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QGroupBox" name="ConnectionBox">
     <property name="geometry">
      <rect>
-      <x>20</x>
+      <x>10</x>
       <y>20</y>
-      <width>201</width>
+      <width>211</width>
       <height>121</height>
      </rect>
     </property>
@@ -109,7 +109,7 @@
      <rect>
       <x>10</x>
       <y>440</y>
-      <width>761</width>
+      <width>771</width>
       <height>131</height>
      </rect>
     </property>
@@ -130,9 +130,9 @@
    <widget class="QGroupBox" name="ParametersBox">
     <property name="geometry">
      <rect>
-      <x>20</x>
+      <x>10</x>
       <y>300</y>
-      <width>201</width>
+      <width>211</width>
       <height>141</height>
      </rect>
     </property>
@@ -144,7 +144,7 @@
       <rect>
        <x>10</x>
        <y>10</y>
-       <width>181</width>
+       <width>191</width>
        <height>131</height>
       </rect>
      </property>
@@ -231,7 +231,7 @@
       <item row="2" column="0">
        <widget class="QLabel" name="openTimeLabel">
         <property name="text">
-         <string>Shutter open time:</string>
+         <string>Shutter opened:</string>
         </property>
        </widget>
       </item>
@@ -318,7 +318,7 @@
      <rect>
       <x>230</x>
       <y>30</y>
-      <width>531</width>
+      <width>551</width>
       <height>411</height>
      </rect>
     </property>
@@ -334,7 +334,7 @@
        <rect>
         <x>10</x>
         <y>10</y>
-        <width>251</width>
+        <width>301</width>
         <height>371</height>
        </rect>
       </property>
@@ -342,7 +342,7 @@
      <widget class="QWidget" name="horizontalLayoutWidget">
       <property name="geometry">
        <rect>
-        <x>270</x>
+        <x>320</x>
         <y>10</y>
         <width>211</width>
         <height>31</height>
@@ -352,7 +352,7 @@
        <item>
         <widget class="QLabel" name="rowNumberLabel">
          <property name="text">
-          <string>Number of rows:</string>
+          <string>Rows number:</string>
          </property>
         </widget>
        </item>
@@ -375,7 +375,7 @@
      <widget class="QGroupBox" name="annealBox">
       <property name="geometry">
        <rect>
-        <x>270</x>
+        <x>320</x>
         <y>60</y>
         <width>211</width>
         <height>111</height>
@@ -389,8 +389,8 @@
         <rect>
          <x>10</x>
          <y>19</y>
-         <width>194</width>
-         <height>81</height>
+         <width>191</width>
+         <height>83</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="annealLayout">
@@ -422,7 +422,7 @@
              <enum>Qt::LeftToRight</enum>
             </property>
             <property name="text">
-             <string>%  </string>
+             <string>%     </string>
             </property>
             <property name="textFormat">
              <enum>Qt::AutoText</enum>
@@ -460,11 +460,22 @@
          </layout>
         </item>
         <item>
-         <widget class="QPushButton" name="startAnnealButton">
-          <property name="text">
-           <string>Start</string>
-          </property>
-         </widget>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QPushButton" name="toggleShutterButton">
+            <property name="text">
+             <string>Toggle shutter</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="startAnnealButton">
+            <property name="text">
+             <string>Start</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>
@@ -492,9 +503,9 @@
    <widget class="QGroupBox" name="StagesConrtolBox">
     <property name="geometry">
      <rect>
-      <x>20</x>
+      <x>10</x>
       <y>180</y>
-      <width>201</width>
+      <width>211</width>
       <height>111</height>
      </rect>
     </property>
