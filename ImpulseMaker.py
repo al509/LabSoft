@@ -87,13 +87,14 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         cls.tableWidget.setHorizontalHeaderLabels(["Coordinate", "Number of shots"])
 
     def setupMotor(cls):
-         try:
+        global Motor 
+        try:
              from libs import thorlabs_apt as apt
              Motor = apt.Motor(90864301)
              Motor.set_move_home_parameters(2, 1, 7.0, 0.0001)
              cls.logText("Motor initialized")
              cls.LogField.append("")
-         except:
+        except:
             cls.logWarningText("Motor not initialized :"+str(sys.exc_info()[1]))
             cls.LogField.append("")
 
@@ -325,14 +326,14 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             cls.startAnnealButton.setEnabled(False)
             start_pos = 53
             end_pos = 75
-            Laser. setPower(cls.doubleSpinBox.value())
+            Laser. setPower(cls.annealPowerBox.value())
             Shutter.setMode(1)
             if Shutter.getToggle() == "1":
                 Shutter.setToggle()
 
             cls.logText("Moving to start position")
             Motor.move_to(start_pos, True)
-            Motor.set_velocity_parameters(0, 10, cls.annealValueBox.value())
+            Motor.set_velocity_parameters(0, 10, cls.annealSpeedBox.value())
             Laser.setOn()
             cls.logText("Starting to burn")
             Shutter.setToggle()
@@ -361,7 +362,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
             Laser.setPower(power)
 
-            Shutter.setMode(3)
+            Shutter.setMode(1)
             if Shutter.getToggle == "1":
                 Shutter.setToggle()
             Laser.setOn()
@@ -444,6 +445,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         try:
             Laser.close()
             Shutter.sc._file.close()
+            print ("Cleared")
         except NameError:
             pass
         except:
@@ -459,7 +461,9 @@ def main():
         app = QApplication.instance()
     main = MainApp()
     main.show()
-    sys.exit(app.exec())
+    app.exec()
+    del(main)
+    sys.exit()
     return main
 
 
