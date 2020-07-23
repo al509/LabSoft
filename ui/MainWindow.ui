@@ -334,7 +334,7 @@
        <rect>
         <x>10</x>
         <y>10</y>
-        <width>311</width>
+        <width>301</width>
         <height>371</height>
        </rect>
       </property>
@@ -342,7 +342,7 @@
      <widget class="QWidget" name="horizontalLayoutWidget">
       <property name="geometry">
        <rect>
-        <x>330</x>
+        <x>320</x>
         <y>10</y>
         <width>191</width>
         <height>31</height>
@@ -375,7 +375,7 @@
      <widget class="QGroupBox" name="annealBox">
       <property name="geometry">
        <rect>
-        <x>330</x>
+        <x>320</x>
         <y>60</y>
         <width>191</width>
         <height>111</height>
