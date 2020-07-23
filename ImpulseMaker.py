@@ -2,6 +2,7 @@ DEBUG = False
 from serial import SerialException
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
+from PyQt5.QtWidgets import QFileDialog
 import serial.tools.list_ports
 import sys
 from ui import MainWindow as ui
@@ -78,6 +79,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         cls.fileButton.clicked.connect(cls.fileClicked)
         cls.startAnnealButton.clicked.connect(cls.startAnnealClicked)
         cls.toggleShutterButton.clicked.connect(cls.toggleShutter)
+        cls.saveButton.clicked.connect(cls.saveConfig)
 
     def setupTable(cls):
         cls.tableWidget.setColumnCount(2)
@@ -248,21 +250,68 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
 
     def fileClicked(cls):
-        num_lines = sum(1 for line in open('setup'))
-        cls.rowNumberBox.setValue(num_lines)
-        cls.tableWidget.setRowCount(num_lines)
-
-        i = 0
-        f = open('setup', 'r')
-        for line in f:
-            line = line.strip()
-            columns = line.split()
-            x_item = QTableWidgetItem(columns[0])
-            n_item = QTableWidgetItem(columns[1])
-            cls.tableWidget.setItem(i, 0, x_item)
-            cls.tableWidget.setItem(i, 1, n_item)
-            i+=1
-
+        try:
+            filepath = QFileDialog.getOpenFileName(cls, "Open File", "saves",
+                                        "Impulse Maker savefile (*.ims)")[0]
+        
+            f = open(filepath, 'r')
+            filename = filepath.split('/')[-1]
+            
+            num_lines = int(f.readline())
+            cls.rowNumberBox.setValue(num_lines)
+            cls.tableWidget.setRowCount(num_lines)
+            
+            params = f.readline().split()
+            cls.powerSpinBox.setValue(float(params[0]))
+            cls.openSpinBox.setValue(float(params[1]))
+            cls.periodSpinBox.setValue(float(params[2]))
+            
+            params = f.readline().split() 
+            cls.annealPowerBox.setValue(float(params[0]))
+            cls.annealSpeedBox.setValue(float(params[1]))
+            
+            for i in range(0, num_lines):
+                line = f.readline()
+                columns = line.split()
+                x_item = QTableWidgetItem(columns[0])
+                n_item = QTableWidgetItem(columns[1])
+                cls.tableWidget.setItem(i, 0, x_item)
+                cls.tableWidget.setItem(i, 1, n_item)
+                
+            cls.logText("Successfully loaded configuration file " + filename)
+        except:
+             cls.logWarningText("File loading failed: "
+                                 + str(sys.exc_info()[1]))
+             
+    def saveConfig(cls):
+        try:
+            filepath = QFileDialog.getSaveFileName(cls, "Open File", "saves",
+                                        "Impulse Maker savefile (*.ims)")[0]
+        
+            f = open(filepath, 'w')
+            filename = filepath.split('/')[-1]
+            
+            num_lines = cls.rowNumberBox.value()
+            f.write(str(num_lines) + '\n')
+            
+            f.write(str(cls.powerSpinBox.value()) + " ")
+            f.write(str(cls.openSpinBox.value()) + " ")
+            f.write(str(cls.periodSpinBox.value()) + "\n")
+            
+            f.write(str(cls.annealPowerBox.value()) + " ")
+            f.write(str(cls.annealSpeedBox.value()))
+            
+            
+            for i in range(0, num_lines):
+                x_item = cls.tableWidget.item(i, 0)
+                n_item = cls.tableWidget.item(i, 1)
+                f.write("\n" + x_item.text() + '\t' + n_item.text())
+                
+            cls.logText("Successfully saved configuration file " + filename)
+        except:
+             cls.logWarningText("File saving failed: "
+                                 + str(sys.exc_info()[1]))
+    
     def startAnnealClicked(cls):
         try:
             worker = Worker(cls.startAnneal)
