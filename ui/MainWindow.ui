@@ -293,7 +293,7 @@
       <item row="4" column="0">
        <widget class="QPushButton" name="saveButton">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <property name="text">
          <string>Save config</string>
@@ -407,7 +407,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QDoubleSpinBox" name="doubleSpinBox">
+           <widget class="QDoubleSpinBox" name="annealPowerBox">
             <property name="decimals">
              <number>1</number>
             </property>
@@ -444,7 +444,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QDoubleSpinBox" name="annealValueBox">
+           <widget class="QDoubleSpinBox" name="annealSpeedBox">
             <property name="value">
              <double>5.000000000000000</double>
             </property>
