@@ -288,7 +288,7 @@ class Ui_MainWindow(object):
         self.periodMsLabel.setText(_translate("MainWindow", "ms"))
         self.saveButton.setText(_translate("MainWindow", "Save config"))
         self.startButton.setText(_translate("MainWindow", "Start/stop"))
-        self.rowNumberLabel.setText(_translate("MainWindow", "Number of rows:"))
+        self.rowNumberLabel.setText(_translate("MainWindow", "Rows number:"))
         self.rowsApplyButton.setText(_translate("MainWindow", "Apply"))
         self.annealBox.setTitle(_translate("MainWindow", "Fiber annealing"))
         self.annealPowerLabel.setText(_translate("MainWindow", "Laser power:"))

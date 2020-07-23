@@ -29,24 +29,34 @@ class Worker(QtCore.QRunnable):
 
 class MainApp(QMainWindow, ui.Ui_MainWindow):
     def __init__(cls):
+         
+        
          QMainWindow.__init__(cls)
          ui.Ui_MainWindow.__init__(cls)
-
+         
+         cls.threadpool = QtCore.QThreadPool()
+         cls.isNotStarted = threading.Event()
+         cls.isNotStarted.set()
+         
+         global Laser
+         global Shutter
+         global Motor
+         
+         cls.timeToHeat = 30
+         
+         
          cls.setupUi(cls)
          cls.setupBox()
          cls.setupButtons()
          cls.setupTable()
-         cls.setupMotor()
-
+         
+         worker = Worker(cls.setupMotor)
+         cls.threadpool.start(worker)
          cls.autoDetectClicked()
 
 
-         cls.timeToHeat = 30
 
-         cls.threadpool = QtCore.QThreadPool()
 
-         cls.isNotStarted = threading.Event()
-         cls.isNotStarted.set()
 
     def setupBox(cls):
         cls.laserPortLineEdit.setVisible(False)
@@ -74,17 +84,11 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
     def setupMotor(cls):
          try:
-             global motor1
-             global motor2
-
              from libs import thorlabs_apt as apt
-             motor1 = apt.Motor(90864300)
-             motor2 = apt.Motor(90864301)
-             motor1.set_move_home_parameters(2, 1, 7.0, 0.0001)
-             motor2.set_move_home_parameters(2, 1, 7.0, 0.0001)
-             if DEBUG:
-                 cls.logText("Motor initialized")
-                 cls.LogField.append("")
+             Motor = apt.Motor(90864301)
+             Motor.set_move_home_parameters(2, 1, 7.0, 0.0001)
+             cls.logText("Motor initialized")
+             cls.LogField.append("")
          except:
             cls.logWarningText("Motor not initialized :"+str(sys.exc_info()[1]))
             cls.LogField.append("")
@@ -170,32 +174,30 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
     def stagesToZerosClicked(self):
         try:
 
-            motor2.set_velocity_parameters(0, 3.5, 4.5)
+            Motor.set_velocity_parameters(0, 3.5, 4.5)
 
-            motor2.move_home(True)
+            Motor.move_home(True)
             self.logText('Stages moved to zeros')
         except:
             self.logWarningText(str(sys.exc_info()[1]))
 
     def stagesToHomeClicked(self):
         try:
-            motor2.backlash_distance(0)
+            Motor.backlash_distance(0)
 
-            motor2.set_velocity_parameters(0, 3.5, 4.5)
+            Motor.set_velocity_parameters(0, 3.5, 4.5)
 
             Home_value2 = 53
 
-            motor2.move_to(Home_value2, True)
+            Motor.move_to(Home_value2, True)
             self.logText('Stages moved to start position')
         except:
             self.logWarningText(str(sys.exc_info()[1]))
 
     def moveStagesClicked(self):
         try:
-            motor1.set_velocity_parameters(0, 3.5, 4.5)
-            motor2.set_velocity_parameters(0, 3.5, 4.5)
-            motor1.move_by(-1*float(self.ui.MoveStagesField.text()), False)
-            motor2.move_by(float(self.ui.MoveStagesField.text()), False)
+            Motor.set_velocity_parameters(0, 3.5, 4.5)
+            Motor.move_by(float(self.ui.MoveStagesField.text()), False)
             self.logText('Stages moved')
         except:
             self.logWarningText(str(sys.exc_info()[1]))
@@ -272,19 +274,18 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             cls.startAnnealButton.setEnabled(False)
             start_pos = 53
             end_pos = 75
-            motor = motor2
             Laser. setPower(cls.doubleSpinBox.value())
             Shutter.setMode(1)
             if Shutter.getToggle() == "1":
                 Shutter.setToggle()
 
             cls.logText("Moving to start position")
-            motor.move_to(start_pos, True)
-            motor.set_velocity_parameters(0, 10, cls.annealValueBox.value())
+            Motor.move_to(start_pos, True)
+            Motor.set_velocity_parameters(0, 10, cls.annealValueBox.value())
             Laser.setOn()
             cls.logText("Starting to burn")
             Shutter.setToggle()
-            motor.move_to(end_pos, True)
+            Motor.move_to(end_pos, True)
             Shutter.setToggle()
             Laser.setOff()
             cls.logText("Anneal finished")
@@ -302,8 +303,6 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
     def start(cls):
         try:
-            motor = motor2
-
             power = cls.powerSpinBox.value()
             Topen = cls.openSpinBox.value()
             Tperiod = cls.periodSpinBox.value()
@@ -334,7 +333,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                 cls.logText("Processing coordinate "
                              + str(x) + " with " + str(n) + " times")
 
-                motor.move_to(x, True)
+                Motor.move_to(x, True)
                 if cls.isNotStarted.isSet():
                     Laser.setOff()
                     cls.logWarningText("Interrupted")
@@ -402,16 +401,6 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
 
 
-if 'init_modules' in globals(  ):
-    # second or subsequent run: remove all but initially loaded modules
-    for m in sys.modules.keys(  ):
-        if m not in init_modules:
-            del(sys.modules[m])
-else:
-    # first run: find out which modules were initially loaded
-    init_modules = sys.modules.keys(  )
-
-
 def main():
     if not QApplication.instance():
         app = QApplication(sys.argv)
@@ -419,7 +408,7 @@ def main():
         app = QApplication.instance()
     main = MainApp()
     main.show()
-#    sys.exit(app.exec())
+    sys.exit(app.exec())
     return main
 
 

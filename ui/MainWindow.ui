@@ -352,7 +352,7 @@
        <item>
         <widget class="QLabel" name="rowNumberLabel">
          <property name="text">
-          <string>Number of rows:</string>
+          <string>Rows number:</string>
          </property>
         </widget>
        </item>
