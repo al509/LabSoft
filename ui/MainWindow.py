@@ -63,7 +63,7 @@ class Ui_MainWindow(object):
         self.ParametersBox.setGeometry(QtCore.QRect(20, 300, 201, 141))
         self.ParametersBox.setObjectName("ParametersBox")
         self.layoutWidget = QtWidgets.QWidget(self.ParametersBox)
-        self.layoutWidget.setGeometry(QtCore.QRect(10, 10, 193, 139))
+        self.layoutWidget.setGeometry(QtCore.QRect(10, 10, 191, 131))
         self.layoutWidget.setObjectName("layoutWidget")
         self.ParametersLayout = QtWidgets.QFormLayout(self.layoutWidget)
         self.ParametersLayout.setContentsMargins(0, 0, 0, 0)
