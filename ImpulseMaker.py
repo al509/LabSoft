@@ -41,6 +41,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
          cls.autoDetectClicked()
 
 
+<<<<<<< Updated upstream
          cls.timeToHeat = 30
 
          cls.threadpool = QtCore.QThreadPool()
@@ -48,6 +49,8 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
          cls.isNotStarted = threading.Event()
          cls.isNotStarted.set()
 
+=======
+>>>>>>> Stashed changes
     def setupBox(cls):
         cls.laserPortLineEdit.setVisible(False)
         cls.shutterPortLineEdit.setVisible(False)
