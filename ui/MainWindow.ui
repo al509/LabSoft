@@ -17,9 +17,9 @@
    <widget class="QGroupBox" name="ConnectionBox">
     <property name="geometry">
      <rect>
-      <x>20</x>
+      <x>10</x>
       <y>20</y>
-      <width>201</width>
+      <width>211</width>
       <height>121</height>
      </rect>
     </property>
@@ -130,9 +130,9 @@
    <widget class="QGroupBox" name="ParametersBox">
     <property name="geometry">
      <rect>
-      <x>20</x>
+      <x>10</x>
       <y>300</y>
-      <width>201</width>
+      <width>211</width>
       <height>141</height>
      </rect>
     </property>
@@ -231,7 +231,7 @@
       <item row="2" column="0">
        <widget class="QLabel" name="openTimeLabel">
         <property name="text">
-         <string>Shutter open time:</string>
+         <string>Shutter opened:</string>
         </property>
        </widget>
       </item>
@@ -503,9 +503,9 @@
    <widget class="QGroupBox" name="StagesConrtolBox">
     <property name="geometry">
      <rect>
-      <x>20</x>
+      <x>10</x>
       <y>180</y>
-      <width>201</width>
+      <width>211</width>
       <height>111</height>
      </rect>
     </property>
