@@ -381,7 +381,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             Shutter.setToggle()
         except:
             cls.logWarningText(str(sys.exc_info()[1]))
-            
+
     def shutUp(self, N, Topen, Tclose):
         Shutter.setMode(4)
         Shutter.setRepeat(N)
@@ -389,7 +389,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         Shutter.setCloseTime(Tclose)
         Shutter.setToggle()
         time.sleep(N * (Topen + Tclose)/1000)
-    
+
     def __del__(self):
         try:
             Laser.close()
@@ -400,8 +400,8 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             print(str(sys.exc_info()[1]))
 
 
-        
-            
+
+
 if 'init_modules' in globals(  ):
     # second or subsequent run: remove all but initially loaded modules
     for m in sys.modules.keys(  ):
@@ -419,7 +419,7 @@ def main():
         app = QApplication.instance()
     main = MainApp()
     main.show()
-    sys.exit(app.exec())
+#    sys.exit(app.exec())
     return main
 
 
