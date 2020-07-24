@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Impulse taper maker v0.5 (23.07.2020)</string>
+   <string>Impulse taper maker v0.6 (24.07.2020)</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QGroupBox" name="ConnectionBox">
@@ -145,7 +145,7 @@
        <x>10</x>
        <y>10</y>
        <width>191</width>
-       <height>131</height>
+       <height>139</height>
       </rect>
      </property>
      <layout class="QFormLayout" name="ParametersLayout">
@@ -339,44 +339,11 @@
        </rect>
       </property>
      </widget>
-     <widget class="QWidget" name="horizontalLayoutWidget">
-      <property name="geometry">
-       <rect>
-        <x>320</x>
-        <y>10</y>
-        <width>211</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <layout class="QHBoxLayout" name="horizontalLayout">
-       <item>
-        <widget class="QLabel" name="rowNumberLabel">
-         <property name="text">
-          <string>Rows number:</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QSpinBox" name="rowNumberBox">
-         <property name="value">
-          <number>12</number>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="rowsApplyButton">
-         <property name="text">
-          <string>Apply</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
      <widget class="QGroupBox" name="annealBox">
       <property name="geometry">
        <rect>
         <x>320</x>
-        <y>60</y>
+        <y>10</y>
         <width>211</width>
         <height>111</height>
        </rect>
