@@ -82,6 +82,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         cls.startAnnealButton.clicked.connect(cls.startAnnealClicked)
         cls.toggleShutterButton.clicked.connect(cls.toggleShutter)
         cls.saveButton.clicked.connect(cls.saveConfig)
+        cls.tableWidget.cellChanged.connect(cls.cellChangeHandler)
 
     def setupTable(cls):
         cls.tableWidget.setColumnCount(2)
@@ -437,6 +438,10 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         except:
             self.logWarningText(str(sys.exc_info()[1]))
 
+
+    def cellChangeHandler(self, row, collumn):
+        if collumn == 0:
+            pass
 
 
     def logText(self, text):
