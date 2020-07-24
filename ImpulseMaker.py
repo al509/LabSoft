@@ -82,6 +82,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         cls.startAnnealButton.clicked.connect(cls.startAnnealClicked)
         cls.toggleShutterButton.clicked.connect(cls.toggleShutter)
         cls.saveButton.clicked.connect(cls.saveConfig)
+        cls.tableWidget.cellChanged.connect(cls.cellChangeHandler)
 
     def setupTable(cls):
         cls.tableWidget.setColumnCount(2)
@@ -258,6 +259,9 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             filepath = QFileDialog.getOpenFileName(cls, "Open File", "saves",
                                         "Impulse Maker savefile (*.ims)")[0]
         
+            if filepath == "":
+                cls.logText("File load aborted")
+                return
             f = open(filepath, 'r')
             filename = filepath.split('/')[-1]
             
@@ -292,6 +296,9 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             filepath = QFileDialog.getSaveFileName(cls, "Open File", "saves",
                                         "Impulse Maker savefile (*.ims)")[0]
         
+            if filepath == "":
+                cls.logText("File save aborted")
+                return
             f = open(filepath, 'w')
             filename = filepath.split('/')[-1]
             
@@ -431,6 +438,10 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         except:
             self.logWarningText(str(sys.exc_info()[1]))
 
+
+    def cellChangeHandler(self, row, collumn):
+        if collumn == 0:
+            pass
 
 
     def logText(self, text):
