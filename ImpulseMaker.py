@@ -1,4 +1,5 @@
 DEBUG = False
+import os
 from serial import SerialException
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
@@ -308,8 +309,15 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                 x_item = cls.tableWidget.item(i, 0)
                 n_item = cls.tableWidget.item(i, 1)
                 f.write("\n" + x_item.text() + '\t' + n_item.text())
-                
+             
+            f.close()
             cls.logText("Successfully saved configuration file " + filename)
+        except AttributeError:
+            cls.logWarningText("File saving failed: incorrect number of rows."
+                               + " Make sure that all rows filled")
+            f.close()
+            if os.path.exists(fiename):
+                os.remove(filename)
         except:
              cls.logWarningText("File saving failed: "
                                  + str(sys.exc_info()[1]))
