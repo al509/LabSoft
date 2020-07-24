@@ -89,6 +89,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
     def setupMotor(cls):
         global Motor 
         try:
+
              from libs import thorlabs_apt as apt
              Motor = apt.Motor(90864301)
              Motor.set_move_home_parameters(2, 1, 7.0, 0.0001)
@@ -334,6 +335,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             cls.logText("Moving to start position")
             Motor.move_to(start_pos, True)
             Motor.set_velocity_parameters(0, 10, cls.annealSpeedBox.value())
+
             Laser.setOn()
             cls.logText("Starting to burn")
             Shutter.setToggle()
