@@ -44,7 +44,8 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
          global Shutter
          global Motor
 
-         cls.timeToHeat = 30
+         cls.timeToHeat = 30 # sec
+         cls.motorDefaultSpeed = 5 ## mm/s
 
 
          cls.setupUi(cls)
@@ -316,11 +317,10 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             cls.logWarningText("File saving failed: incorrect number of rows."
                                + " Make sure that all rows filled")
             f.close()
-            if os.path.exists(fiename):
-                os.remove(filename)
         except:
              cls.logWarningText("File saving failed: "
                                  + str(sys.exc_info()[1]))
+             f.close()
     
     def startAnnealClicked(cls):
         try:
@@ -341,6 +341,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                 Shutter.setToggle()
 
             cls.logText("Moving to start position")
+            Motor.set_velocity_parameters(0, 10, cls.motorDefaultSpeed)
             Motor.move_to(start_pos, True)
             Motor.set_velocity_parameters(0, 10, cls.annealSpeedBox.value())
 
