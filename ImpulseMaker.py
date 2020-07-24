@@ -406,9 +406,14 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             Laser.setOff()
             cls.logText("Completed")
             cls.isNotStarted.set()
+        except AttributeError:
+            cls.logWarningText("Looks like there are empty values" +
+                               "in coordinates list. Process stopped.")
+            Laser.setOff()
+            cls.isNotStarted.set()
         except:
             cls.logWarningText("Process failed: "+ str(sys.exc_info()[1]))
-
+            cls.isNotStarted.set()
             try:
                 Laser.setOff()
             except:
