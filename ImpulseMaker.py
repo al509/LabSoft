@@ -1,4 +1,5 @@
 DEBUG = False
+import os
 from serial import SerialException
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
@@ -43,7 +44,8 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
          global Shutter
          global Motor
 
-         cls.timeToHeat = 30
+         cls.timeToHeat = 30 # sec
+         cls.motorDefaultSpeed = 5 ## mm/s
 
 
          cls.setupUi(cls)
@@ -308,11 +310,17 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                 x_item = cls.tableWidget.item(i, 0)
                 n_item = cls.tableWidget.item(i, 1)
                 f.write("\n" + x_item.text() + '\t' + n_item.text())
-                
+             
+            f.close()
             cls.logText("Successfully saved configuration file " + filename)
+        except AttributeError:
+            cls.logWarningText("File saving failed: incorrect number of rows."
+                               + " Make sure that all rows filled")
+            f.close()
         except:
              cls.logWarningText("File saving failed: "
                                  + str(sys.exc_info()[1]))
+             f.close()
     
     def startAnnealClicked(cls):
         try:
@@ -333,6 +341,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                 Shutter.setToggle()
 
             cls.logText("Moving to start position")
+            Motor.set_velocity_parameters(0, 10, cls.motorDefaultSpeed)
             Motor.move_to(start_pos, True)
             Motor.set_velocity_parameters(0, 10, cls.annealSpeedBox.value())
 
