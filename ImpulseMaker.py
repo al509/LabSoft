@@ -374,7 +374,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             Laser.setPower(power)
 
             Shutter.setMode(1)
-            if Shutter.getToggle == "1":
+            if Shutter.getToggle() == "1":
                 Shutter.setToggle()
             Laser.setOn()
             cls.logText("Heating laser")
@@ -387,7 +387,6 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             cls.logText("Laser heated. Starting process")
 
             for i in range(0, cls.rowNumberBox.value()):
-
 
                 x_item = cls.tableWidget.item(i, 0)
                 n_item = cls.tableWidget.item(i, 1)
