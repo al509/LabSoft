@@ -449,8 +449,6 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             
             if row + 1 == self.tableWidget.rowCount():
                 self.tableWidget.insertRow(self.tableWidget.rowCount())
-                x_item = QTableWidgetItem(" ")
-                self.tableWidget.setItem(row, 0, x_item)
             elif x == "" and n == "":
                 self.tableWidget.removeRow(row)
         except ValueError:
