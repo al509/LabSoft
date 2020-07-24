@@ -93,7 +93,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         global Motor 
         try:
 
-             from libs import thorlabs_apt as apt
+             import thorlabs_apt as apt
              Motor = apt.Motor(90864301)
              Motor.set_move_home_parameters(2, 1, 7.0, 0.0001)
              cls.logText("Motor initialized")
