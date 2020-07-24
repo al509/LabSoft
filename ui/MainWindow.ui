@@ -145,7 +145,7 @@
        <x>10</x>
        <y>10</y>
        <width>191</width>
-       <height>139</height>
+       <height>131</height>
       </rect>
      </property>
      <layout class="QFormLayout" name="ParametersLayout">
