@@ -2,6 +2,7 @@ DEBUG = False
 from serial import SerialException
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
+from PyQt5.QtWidgets import QFileDialog
 import serial.tools.list_ports
 import sys
 from ui import MainWindow as ui
@@ -78,6 +79,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         cls.fileButton.clicked.connect(cls.fileClicked)
         cls.startAnnealButton.clicked.connect(cls.startAnnealClicked)
         cls.toggleShutterButton.clicked.connect(cls.toggleShutter)
+        cls.saveButton.clicked.connect(cls.saveConfig)
 
     def setupTable(cls):
         cls.tableWidget.setColumnCount(2)
@@ -85,13 +87,15 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         cls.tableWidget.setHorizontalHeaderLabels(["Coordinate", "Number of shots"])
 
     def setupMotor(cls):
-         try:
+        global Motor 
+        try:
+
              from libs import thorlabs_apt as apt
              Motor = apt.Motor(90864301)
              Motor.set_move_home_parameters(2, 1, 7.0, 0.0001)
              cls.logText("Motor initialized")
              cls.LogField.append("")
-         except:
+        except:
             cls.logWarningText("Motor not initialized :"+str(sys.exc_info()[1]))
             cls.LogField.append("")
 
@@ -248,21 +252,68 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
 
     def fileClicked(cls):
-        num_lines = sum(1 for line in open('setup'))
-        cls.rowNumberBox.setValue(num_lines)
-        cls.tableWidget.setRowCount(num_lines)
-
-        i = 0
-        f = open('setup', 'r')
-        for line in f:
-            line = line.strip()
-            columns = line.split()
-            x_item = QTableWidgetItem(columns[0])
-            n_item = QTableWidgetItem(columns[1])
-            cls.tableWidget.setItem(i, 0, x_item)
-            cls.tableWidget.setItem(i, 1, n_item)
-            i+=1
-
+        try:
+            filepath = QFileDialog.getOpenFileName(cls, "Open File", "saves",
+                                        "Impulse Maker savefile (*.ims)")[0]
+        
+            f = open(filepath, 'r')
+            filename = filepath.split('/')[-1]
+            
+            num_lines = int(f.readline())
+            cls.rowNumberBox.setValue(num_lines)
+            cls.tableWidget.setRowCount(num_lines)
+            
+            params = f.readline().split()
+            cls.powerSpinBox.setValue(float(params[0]))
+            cls.openSpinBox.setValue(float(params[1]))
+            cls.periodSpinBox.setValue(float(params[2]))
+            
+            params = f.readline().split() 
+            cls.annealPowerBox.setValue(float(params[0]))
+            cls.annealSpeedBox.setValue(float(params[1]))
+            
+            for i in range(0, num_lines):
+                line = f.readline()
+                columns = line.split()
+                x_item = QTableWidgetItem(columns[0])
+                n_item = QTableWidgetItem(columns[1])
+                cls.tableWidget.setItem(i, 0, x_item)
+                cls.tableWidget.setItem(i, 1, n_item)
+                
+            cls.logText("Successfully loaded configuration file " + filename)
+        except:
+             cls.logWarningText("File loading failed: "
+                                 + str(sys.exc_info()[1]))
+             
+    def saveConfig(cls):
+        try:
+            filepath = QFileDialog.getSaveFileName(cls, "Open File", "saves",
+                                        "Impulse Maker savefile (*.ims)")[0]
+        
+            f = open(filepath, 'w')
+            filename = filepath.split('/')[-1]
+            
+            num_lines = cls.rowNumberBox.value()
+            f.write(str(num_lines) + '\n')
+            
+            f.write(str(cls.powerSpinBox.value()) + " ")
+            f.write(str(cls.openSpinBox.value()) + " ")
+            f.write(str(cls.periodSpinBox.value()) + "\n")
+            
+            f.write(str(cls.annealPowerBox.value()) + " ")
+            f.write(str(cls.annealSpeedBox.value()))
+            
+            
+            for i in range(0, num_lines):
+                x_item = cls.tableWidget.item(i, 0)
+                n_item = cls.tableWidget.item(i, 1)
+                f.write("\n" + x_item.text() + '\t' + n_item.text())
+                
+            cls.logText("Successfully saved configuration file " + filename)
+        except:
+             cls.logWarningText("File saving failed: "
+                                 + str(sys.exc_info()[1]))
+    
     def startAnnealClicked(cls):
         try:
             worker = Worker(cls.startAnneal)
@@ -276,14 +327,15 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             cls.startAnnealButton.setEnabled(False)
             start_pos = 53
             end_pos = 75
-            Laser. setPower(cls.doubleSpinBox.value())
+            Laser. setPower(cls.annealPowerBox.value())
             Shutter.setMode(1)
             if Shutter.getToggle() == "1":
                 Shutter.setToggle()
 
             cls.logText("Moving to start position")
             Motor.move_to(start_pos, True)
-            Motor.set_velocity_parameters(0, 10, cls.annealValueBox.value())
+            Motor.set_velocity_parameters(0, 10, cls.annealSpeedBox.value())
+
             Laser.setOn()
             cls.logText("Starting to burn")
             Shutter.setToggle()
@@ -312,7 +364,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
             Laser.setPower(power)
 
-            Shutter.setMode(3)
+            Shutter.setMode(1)
             if Shutter.getToggle == "1":
                 Shutter.setToggle()
             Laser.setOn()
@@ -395,6 +447,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         try:
             Laser.close()
             Shutter.sc._file.close()
+            print ("Cleared")
         except NameError:
             pass
         except:
@@ -410,7 +463,9 @@ def main():
         app = QApplication.instance()
     main = MainApp()
     main.show()
-    sys.exit(app.exec())
+    app.exec()
+    del(main)
+    sys.exit()
     return main
 
 
