@@ -1,4 +1,5 @@
 DEBUG = False
+import os
 from serial import SerialException
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
@@ -43,7 +44,8 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
          global Shutter
          global Motor
 
-         cls.timeToHeat = 30
+         cls.timeToHeat = 30 # sec
+         cls.motorDefaultSpeed = 5 ## mm/s
 
 
          cls.setupUi(cls)
@@ -80,6 +82,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         cls.startAnnealButton.clicked.connect(cls.startAnnealClicked)
         cls.toggleShutterButton.clicked.connect(cls.toggleShutter)
         cls.saveButton.clicked.connect(cls.saveConfig)
+        cls.tableWidget.cellChanged.connect(cls.cellChangeHandler)
 
     def setupTable(cls):
         cls.tableWidget.setColumnCount(2)
@@ -256,6 +259,9 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             filepath = QFileDialog.getOpenFileName(cls, "Open File", "saves",
                                         "Impulse Maker savefile (*.ims)")[0]
         
+            if filepath == "":
+                cls.logText("File load aborted")
+                return
             f = open(filepath, 'r')
             filename = filepath.split('/')[-1]
             
@@ -290,6 +296,9 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             filepath = QFileDialog.getSaveFileName(cls, "Open File", "saves",
                                         "Impulse Maker savefile (*.ims)")[0]
         
+            if filepath == "":
+                cls.logText("File save aborted")
+                return
             f = open(filepath, 'w')
             filename = filepath.split('/')[-1]
             
@@ -308,11 +317,17 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                 x_item = cls.tableWidget.item(i, 0)
                 n_item = cls.tableWidget.item(i, 1)
                 f.write("\n" + x_item.text() + '\t' + n_item.text())
-                
+             
+            f.close()
             cls.logText("Successfully saved configuration file " + filename)
+        except AttributeError:
+            cls.logWarningText("File saving failed: incorrect number of rows."
+                               + " Make sure that all rows filled")
+            f.close()
         except:
              cls.logWarningText("File saving failed: "
                                  + str(sys.exc_info()[1]))
+             f.close()
     
     def startAnnealClicked(cls):
         try:
@@ -333,6 +348,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                 Shutter.setToggle()
 
             cls.logText("Moving to start position")
+            Motor.set_velocity_parameters(0, 10, cls.motorDefaultSpeed)
             Motor.move_to(start_pos, True)
             Motor.set_velocity_parameters(0, 10, cls.annealSpeedBox.value())
 
@@ -365,7 +381,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             Laser.setPower(power)
 
             Shutter.setMode(1)
-            if Shutter.getToggle == "1":
+            if Shutter.getToggle() == "1":
                 Shutter.setToggle()
             Laser.setOn()
             cls.logText("Heating laser")
@@ -378,7 +394,6 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             cls.logText("Laser heated. Starting process")
 
             for i in range(0, cls.rowNumberBox.value()):
-
 
                 x_item = cls.tableWidget.item(i, 0)
                 n_item = cls.tableWidget.item(i, 1)
@@ -398,9 +413,14 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             Laser.setOff()
             cls.logText("Completed")
             cls.isNotStarted.set()
+        except AttributeError:
+            cls.logWarningText("Looks like there are empty values" +
+                               "in coordinates list. Process stopped.")
+            Laser.setOff()
+            cls.isNotStarted.set()
         except:
             cls.logWarningText("Process failed: "+ str(sys.exc_info()[1]))
-
+            cls.isNotStarted.set()
             try:
                 Laser.setOff()
             except:
@@ -418,6 +438,10 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         except:
             self.logWarningText(str(sys.exc_info()[1]))
 
+
+    def cellChangeHandler(self, row, collumn):
+        if collumn == 0:
+            pass
 
 
     def logText(self, text):
@@ -447,6 +471,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         try:
             Laser.close()
             Shutter.sc._file.close()
+            apt._cleanup()
             print ("Cleared")
         except NameError:
             pass
