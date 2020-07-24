@@ -456,6 +456,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         try:
             Laser.close()
             Shutter.sc._file.close()
+            apt._cleanup()
             print ("Cleared")
         except NameError:
             pass
