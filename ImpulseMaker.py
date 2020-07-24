@@ -1,5 +1,5 @@
 DEBUG = False
-#import os
+import os
 from serial import SerialException
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
@@ -14,6 +14,8 @@ import threading
 
 
 class Worker(QtCore.QRunnable):
+
+
     def __init__(self, fn, *args, **kwargs):
         super(Worker, self).__init__()
         # Store constructor arguments (re-used for processing)
@@ -29,6 +31,8 @@ class Worker(QtCore.QRunnable):
 
 class MainApp(QMainWindow, ui.Ui_MainWindow):
     def __init__(cls):
+
+
          QMainWindow.__init__(cls)
          ui.Ui_MainWindow.__init__(cls)
 
@@ -68,6 +72,8 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         cls.manualConnectionBox.stateChanged.connect(cls.manualConnectionClicked)
         cls.AutoDetectButton.clicked.connect(cls.autoDetectClicked)
         cls.manualConnectButton.clicked.connect(cls.manualConnectClicked)
+        cls.rowsApplyButton.clicked.connect(cls.rowsApplyClicked)
+#        cls.rowNumberBox.valueChanged.connect(cls.rowsApplyClicked)
         cls.StagesToZerosButton.clicked.connect(cls.stagesToZerosClicked)
         cls.StagesToHomeButton.clicked.connect(cls.stagesToHomeClicked)
         cls.MoveStagesButton.clicked.connect(cls.moveStagesClicked)
@@ -77,18 +83,17 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         cls.toggleShutterButton.clicked.connect(cls.toggleShutter)
         cls.saveButton.clicked.connect(cls.saveConfig)
         cls.tableWidget.cellChanged.connect(cls.cellChangeHandler)
-        cls.tableWidget.cellActivated.connect(cls.insertRow)
 
     def setupTable(cls):
         cls.tableWidget.setColumnCount(2)
-        cls.tableWidget.setRowCount(1)
+        cls.tableWidget.setRowCount(12)
         cls.tableWidget.setHorizontalHeaderLabels(["Coordinate", "Number of shots"])
 
     def setupMotor(cls):
         global Motor 
         try:
 
-             from libs import thorlabs_apt as apt
+             import thorlabs_apt as apt
              Motor = apt.Motor(90864301)
              Motor.set_move_home_parameters(2, 1, 7.0, 0.0001)
              cls.logText("Motor initialized")
@@ -97,6 +102,8 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             cls.logWarningText("Motor not initialized :"+str(sys.exc_info()[1]))
             cls.LogField.append("")
 
+    def rowsApplyClicked(cls):
+        cls.tableWidget.setRowCount(cls.rowNumberBox.value())
 
     def manualConnectionClicked(self):
         if self.manualConnectionBox.isChecked() == True:
@@ -259,6 +266,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             filename = filepath.split('/')[-1]
             
             num_lines = int(f.readline())
+            cls.rowNumberBox.setValue(num_lines)
             cls.tableWidget.setRowCount(num_lines)
             
             params = f.readline().split()
@@ -294,7 +302,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             f = open(filepath, 'w')
             filename = filepath.split('/')[-1]
             
-            num_lines = cls.tableWidget.rowCount() - 1
+            num_lines = cls.rowNumberBox.value()
             f.write(str(num_lines) + '\n')
             
             f.write(str(cls.powerSpinBox.value()) + " ")
@@ -385,7 +393,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                 return
             cls.logText("Laser heated. Starting process")
 
-            for i in range(0, cls.tableWidget.rowCount() - 1):
+            for i in range(0, cls.rowNumberBox.value()):
 
                 x_item = cls.tableWidget.item(i, 0)
                 n_item = cls.tableWidget.item(i, 1)
@@ -432,35 +440,9 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
 
     def cellChangeHandler(self, row, collumn):
-        try:
-            
-            x_item = self.tableWidget.item(row, 0)
-            n_item = self.tableWidget.item(row, 1)
-            
-            if x_item is None:
-                self.tableWidget.setItem(row, 0, QTableWidgetItem(""))
-                return
-            if n_item is None:
-                self.tableWidget.setItem(row, 1, QTableWidgetItem(""))
-                return
-            
-            x =x_item.text()
-            n = n_item.text()
-            
-            if row + 1 == self.tableWidget.rowCount():
-                self.tableWidget.insertRow(self.tableWidget.rowCount())
-                x_item = QTableWidgetItem(" ")
-                self.tableWidget.setItem(row, 0, x_item)
-            elif x == "" and n == "":
-                self.tableWidget.removeRow(row)
-        except ValueError:
-            self.logWarningText("Process failed: "+ str(sys.exc_info()[1]))
-            
-    def insertRow(self, row, collumn):
-        self.tableWidget.insertRow(row+1)
-        
-        x_item = QTableWidgetItem(" ")
-        self.tableWidget.setItem(row+1, 0, x_item)
+        if collumn == 0:
+            pass
+
 
     def logText(self, text):
         self.LogField.append(">" + text)
