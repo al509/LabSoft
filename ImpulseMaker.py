@@ -278,6 +278,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                 cls.tableWidget.setItem(i, 0, x_item)
                 cls.tableWidget.setItem(i, 1, n_item)
                 
+            cls.fileEdit.setText(filename)
             cls.logText("Successfully loaded configuration file " + filename)
         except:
              cls.logWarningText("File loading failed: "
@@ -311,6 +312,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                 f.write("\n" + x_item.text() + '\t' + n_item.text())
              
             f.close()
+            cls.fileEdit.setText(filename)
             cls.logText("Successfully saved configuration file " + filename)
         except AttributeError:
             cls.logWarningText("File saving failed: incorrect number of rows."
@@ -386,7 +388,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             cls.logText("Laser heated. Starting process")
 
             for i in range(0, cls.tableWidget.rowCount() - 1):
-
+                    
                 x_item = cls.tableWidget.item(i, 0)
                 n_item = cls.tableWidget.item(i, 1)
                 x = (float(x_item.text()))

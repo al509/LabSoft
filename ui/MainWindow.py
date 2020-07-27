@@ -262,7 +262,7 @@ class Ui_MainWindow(object):
         self.manualConnectButton.setText(_translate("MainWindow", "Connect"))
         self.LogBox.setTitle(_translate("MainWindow", "Log"))
         self.ParametersBox.setTitle(_translate("MainWindow", "Parameters"))
-        self.fileLabel.setText(_translate("MainWindow", "Coordinates file:"))
+        self.fileLabel.setText(_translate("MainWindow", "Last used file:"))
         self.fileEdit.setText(_translate("MainWindow", "Select file"))
         self.fileButton.setText(_translate("MainWindow", "..."))
         self.powerLabel.setText(_translate("MainWindow", "Laser power:"))

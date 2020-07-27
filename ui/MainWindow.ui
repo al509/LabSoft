@@ -152,7 +152,7 @@
       <item row="0" column="0">
        <widget class="QLabel" name="fileLabel">
         <property name="text">
-         <string>Coordinates file:</string>
+         <string>Last used file:</string>
         </property>
        </widget>
       </item>
