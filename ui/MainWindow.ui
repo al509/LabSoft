@@ -145,7 +145,7 @@
        <x>10</x>
        <y>10</y>
        <width>191</width>
-       <height>139</height>
+       <height>131</height>
       </rect>
      </property>
      <layout class="QFormLayout" name="ParametersLayout">
@@ -342,7 +342,7 @@
        <string/>
       </property>
       <property name="statusTip">
-       <string>Enter - create new row; clear all data from row will delete it.</string>
+       <string>Enter - create new row; empty rows will be deleted automatically.</string>
       </property>
      </widget>
      <widget class="QGroupBox" name="annealBox">

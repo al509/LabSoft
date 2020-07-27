@@ -449,7 +449,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             
 #            if row + 1 == self.tableWidget.rowCount():
 #                self.tableWidget.insertRow(self.tableWidget.rowCount())
-            if x == "" and n == "":
+            if x == "" and n == "" and self.tableWidget.rowCount() != 1:
                 self.tableWidget.removeRow(row)
         except ValueError:
             self.logWarningText("Process failed: "+ str(sys.exc_info()[1]))
