@@ -1,5 +1,6 @@
 DEBUG = False
 #import os
+from pathlib import Path
 from serial import SerialException
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
@@ -42,7 +43,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
          cls.timeToHeat = 30 # sec
          cls.motorDefaultSpeed = 5 ## mm/s
-
+         cls.filedir = "saves"
 
          cls.setupUi(cls)
          cls.setupBox()
@@ -249,9 +250,11 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
     def fileClicked(cls):
         try:
-            filepath = QFileDialog.getOpenFileName(cls, "Open File", "saves",
+            
+            filepath = QFileDialog.getOpenFileName(cls, "Open File", cls.filedir,
                                         "Impulse Maker savefile (*.ims)")[0]
         
+            cls.filedir = str(Path(filepath).parent)
             if filepath == "":
                 cls.logText("File load aborted")
                 return
@@ -286,8 +289,10 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
              
     def saveConfig(cls):
         try:
-            filepath = QFileDialog.getSaveFileName(cls, "Open File", "saves",
+            filepath = QFileDialog.getSaveFileName(cls, "Open File", cls.filedir,
                                         "Impulse Maker savefile (*.ims)")[0]
+            
+            cls.filedir = str(Path(filepath).parent)
         
             if filepath == "":
                 cls.logText("File save aborted")
@@ -459,8 +464,8 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
     def insertRow(self, row, collumn):
         self.tableWidget.insertRow(row+1)
         
-        x_item = QTableWidgetItem("x")
-        n_item = QTableWidgetItem("n")
+        x_item = QTableWidgetItem("0")
+        n_item = QTableWidgetItem("0")
         self.tableWidget.setItem(row+1, 0, x_item)
         self.tableWidget.setItem(row+1, 1, n_item)
 
