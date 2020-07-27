@@ -447,9 +447,9 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             x =x_item.text()
             n = n_item.text()
             
-            if row == self.tableWidget.rowCount():
-                self.tableWidget.insertRow(self.tableWidget.rowCount())
-            elif x == "" and n == "":
+#            if row + 1 == self.tableWidget.rowCount():
+#                self.tableWidget.insertRow(self.tableWidget.rowCount())
+            if x == "" and n == "":
                 self.tableWidget.removeRow(row)
         except ValueError:
             self.logWarningText("Process failed: "+ str(sys.exc_info()[1]))
@@ -457,8 +457,10 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
     def insertRow(self, row, collumn):
         self.tableWidget.insertRow(row+1)
         
-        x_item = QTableWidgetItem(" ")
+        x_item = QTableWidgetItem("x")
+        n_item = QTableWidgetItem("n")
         self.tableWidget.setItem(row+1, 0, x_item)
+        self.tableWidget.setItem(row+1, 1, n_item)
 
     def logText(self, text):
         self.LogField.append(">" + text)
