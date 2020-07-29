@@ -2,7 +2,7 @@ DEBUG = False
 #import os
 from pathlib import Path
 from serial import SerialException
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
 from PyQt5.QtWidgets import QFileDialog
 import serial.tools.list_ports
@@ -12,6 +12,14 @@ from libs import SynradLaser, SC10Shutter
 import time
 import threading
 
+
+import matplotlib
+import random
+matplotlib.use('Qt5Agg')
+
+
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT as NavigationToolbar
+from matplotlib.figure import Figure
 
 
 class Worker(QtCore.QRunnable):
@@ -27,76 +35,109 @@ class Worker(QtCore.QRunnable):
         self.fn(*self.args, **self.kwargs)
 
 
+class MplCanvas(FigureCanvasQTAgg):
+
+    def __init__(self, parent=None, width=5, height=4, dpi=100):
+        fig = Figure(figsize=(width, height), dpi=dpi)
+        self.axes = fig.add_subplot(111)
+        super(MplCanvas, self).__init__(fig)
+
+
 
 class MainApp(QMainWindow, ui.Ui_MainWindow):
-    def __init__(cls):
-         QMainWindow.__init__(cls)
-         ui.Ui_MainWindow.__init__(cls)
+    def __init__(self):
+         QMainWindow.__init__(self)
+         ui.Ui_MainWindow.__init__(self)
 
-         cls.threadpool = QtCore.QThreadPool()
-         cls.isNotStarted = threading.Event()
-         cls.isNotStarted.set()
+         self.threadpool = QtCore.QThreadPool()
+         self.isNotStarted = threading.Event()
+         self.isNotStarted.set()
 
          global Laser
          global Shutter
          global Motor
 
-         cls.timeToHeat = 30 # sec
-         cls.motorDefaultSpeed = 5 ## mm/s
-         cls.filedir = "saves"
+         self.timeToHeat = 30 # sec
+         self.motorDefaultSpeed = 5 ## mm/s
+         self.filedir = "saves"
 
-         cls.setupUi(cls)
-         cls.setupBox()
-         cls.setupButtons()
-         cls.setupTable()
+         self.setupUi(self)
+         self.setupBox()
+         self.setupButtons()
+         self.setupTable()
 
-         worker1 = Worker(cls.setupMotor)
-         cls.threadpool.start(worker1)
-         worker2 = Worker(cls.autoDetectClicked)
-         cls.threadpool.start(worker2)
-
-
+         worker1 = Worker(self.setupMotor)
+         self.threadpool.start(worker1)
+         worker2 = Worker(self.autoDetectClicked)
+         self.threadpool.start(worker2)
 
 
+         self.canvas = MplCanvas(self, width=5, height=4, dpi=100)
+         toolbar = NavigationToolbar(self.canvas, self)
+         
+         layout = QtWidgets.QGridLayout(self.tab_2)
+         layout.addWidget(toolbar)
+         layout.addWidget(self.canvas)
 
+    def update_plot(self):
+        if self.tabWidget.currentIndex() == 1:
+            xdata = []
+            ydata = []
+            num_lines = self.tableWidget.rowCount()
+            for i in range(0, num_lines):
+                x_item = self.tableWidget.item(i, 0)
+                n_item = self.tableWidget.item(i, 1)
+                x = float(x_item.text())
+                n = int(n_item.text())
+                
+                xdata.append(x)
+                ydata.append(n)
+                
+            self.canvas.axes.cla()  # Clear the canvas.
+            self.canvas.axes.plot(xdata, ydata, 'r')
+            # Trigger the canvas to update and redraw.
+            self.canvas.draw()
+    
 
-    def setupBox(cls):
-        cls.laserPortLineEdit.setVisible(False)
-        cls.shutterPortLineEdit.setVisible(False)
-        cls.manualConnectButton.setVisible(False)
+    def setupBox(self):
+        self.laserPortLineEdit.setVisible(False)
+        self.shutterPortLineEdit.setVisible(False)
+        self.manualConnectButton.setVisible(False)
 
-    def setupButtons(cls):
-        cls.manualConnectionBox.stateChanged.connect(cls.manualConnectionClicked)
-        cls.AutoDetectButton.clicked.connect(cls.autoDetectClicked)
-        cls.manualConnectButton.clicked.connect(cls.manualConnectClicked)
-        cls.StagesToZerosButton.clicked.connect(cls.stagesToZerosClicked)
-        cls.StagesToHomeButton.clicked.connect(cls.stagesToHomeClicked)
-        cls.MoveStagesButton.clicked.connect(cls.moveStagesClicked)
-        cls.startButton.clicked.connect(cls.startClicked)
-        cls.fileButton.clicked.connect(cls.fileClicked)
-        cls.startAnnealButton.clicked.connect(cls.startAnnealClicked)
-        cls.toggleShutterButton.clicked.connect(cls.toggleShutter)
-        cls.saveButton.clicked.connect(cls.saveConfig)
-        cls.tableWidget.cellChanged.connect(cls.cellChangeHandler)
-        cls.tableWidget.cellActivated.connect(cls.insertRow)
+    def setupButtons(self):
+        self.manualConnectionBox.stateChanged.connect(self.manualConnectionClicked)
+        self.AutoDetectButton.clicked.connect(self.autoDetectClicked)
+        self.manualConnectButton.clicked.connect(self.manualConnectClicked)
+        self.StagesToZerosButton.clicked.connect(self.stagesToZerosClicked)
+        self.StagesToHomeButton.clicked.connect(self.stagesToHomeClicked)
+        self.MoveStagesButton.clicked.connect(self.moveStagesClicked)
+        self.startButton.clicked.connect(self.startClicked)
+        self.fileButton.clicked.connect(self.fileClicked)
+        self.startAnnealButton.clicked.connect(self.startAnnealClicked)
+        self.toggleShutterButton.clicked.connect(self.toggleShutter)
+        self.saveButton.clicked.connect(self.saveConfig)
+        self.tableWidget.cellChanged.connect(self.cellChangeHandler)
+        self.tableWidget.cellActivated.connect(self.insertRow)
+        self.tabWidget.currentChanged.connect(self.update_plot)
+        self.sortingBox.stateChanged.connect(self.toggleSort)
 
-    def setupTable(cls):
-        cls.tableWidget.setColumnCount(2)
-        cls.tableWidget.setRowCount(1)
-        cls.tableWidget.setHorizontalHeaderLabels(["Coordinate", "Number of shots"])
+    def setupTable(self):
+        self.tableWidget.setColumnCount(2)
+        self.tableWidget.setRowCount(1)
+        self.tableWidget.setHorizontalHeaderLabels(["Coordinate", "Number of shots"])
 
-    def setupMotor(cls):
+    def setupMotor(self):
         global Motor 
         try:
 
              import thorlabs_apt as apt
              Motor = apt.Motor(90864301)
              Motor.set_move_home_parameters(2, 1, 7.0, 0.0001)
-             cls.logText("Motor initialized")
-             cls.LogField.append("")
+             self.logText("Motor initialized")
+             self.LogField.append("")
         except:
-            cls.logWarningText("Motor not initialized :"+str(sys.exc_info()[1]))
-            cls.LogField.append("")
+            self.logWarningText("Motor not initialized :"+str(sys.exc_info()[1]))
+            self.LogField.append("")
 
 
     def manualConnectionClicked(self):
@@ -248,117 +289,117 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         self.LogField.append("")
 
 
-    def fileClicked(cls):
+    def fileClicked(self):
         try:
             
-            filepath = QFileDialog.getOpenFileName(cls, "Open File", cls.filedir,
+            filepath = QFileDialog.getOpenFileName(self, "Open File", self.filedir,
                                         "Impulse Maker savefile (*.ims)")[0]
         
-            cls.filedir = str(Path(filepath).parent)
+            self.filedir = str(Path(filepath).parent)
             if filepath == "":
-                cls.logText("File load aborted")
+                self.logText("File load aborted")
                 return
             f = open(filepath, 'r')
             filename = filepath.split('/')[-1]
             
             num_lines = int(f.readline())
-            cls.tableWidget.setRowCount(num_lines)
+            self.tableWidget.setRowCount(num_lines)
             
             params = f.readline().split()
-            cls.powerSpinBox.setValue(float(params[0]))
-            cls.openSpinBox.setValue(float(params[1]))
-            cls.periodSpinBox.setValue(float(params[2]))
+            self.powerSpinBox.setValue(float(params[0]))
+            self.openSpinBox.setValue(float(params[1]))
+            self.periodSpinBox.setValue(float(params[2]))
             
             params = f.readline().split() 
-            cls.annealPowerBox.setValue(float(params[0]))
-            cls.annealSpeedBox.setValue(float(params[1]))
+            self.annealPowerBox.setValue(float(params[0]))
+            self.annealSpeedBox.setValue(float(params[1]))
             
             for i in range(0, num_lines):
                 line = f.readline()
                 columns = line.split()
                 x_item = QTableWidgetItem(columns[0])
                 n_item = QTableWidgetItem(columns[1])
-                cls.tableWidget.setItem(i, 0, x_item)
-                cls.tableWidget.setItem(i, 1, n_item)
+                self.tableWidget.setItem(i, 0, x_item)
+                self.tableWidget.setItem(i, 1, n_item)
                 
-            cls.fileEdit.setText(filename)
-            cls.logText("Successfully loaded configuration file " + filename)
+            self.fileEdit.setText(filename)
+            self.logText("Successfully loaded configuration file " + filename)
         except:
-             cls.logWarningText("File loading failed: "
+             self.logWarningText("File loading failed: "
                                  + str(sys.exc_info()[1]))
              
-    def saveConfig(cls):
+    def saveConfig(self):
         try:
-            filepath = QFileDialog.getSaveFileName(cls, "Open File", cls.filedir,
+            filepath = QFileDialog.getSaveFileName(self, "Open File", self.filedir,
                                         "Impulse Maker savefile (*.ims)")[0]
             
-            cls.filedir = str(Path(filepath).parent)
+            self.filedir = str(Path(filepath).parent)
         
             if filepath == "":
-                cls.logText("File save aborted")
+                self.logText("File save aborted")
                 return
             f = open(filepath, 'w')
             filename = filepath.split('/')[-1]
             
-            num_lines = cls.tableWidget.rowCount() - 1
+            num_lines = self.tableWidget.rowCount() - 1
             f.write(str(num_lines) + '\n')
             
-            f.write(str(cls.powerSpinBox.value()) + " ")
-            f.write(str(cls.openSpinBox.value()) + " ")
-            f.write(str(cls.periodSpinBox.value()) + "\n")
+            f.write(str(self.powerSpinBox.value()) + " ")
+            f.write(str(self.openSpinBox.value()) + " ")
+            f.write(str(self.periodSpinBox.value()) + "\n")
             
-            f.write(str(cls.annealPowerBox.value()) + " ")
-            f.write(str(cls.annealSpeedBox.value()))
+            f.write(str(self.annealPowerBox.value()) + " ")
+            f.write(str(self.annealSpeedBox.value()))
             
             
             for i in range(0, num_lines):
-                x_item = cls.tableWidget.item(i, 0)
-                n_item = cls.tableWidget.item(i, 1)
+                x_item = self.tableWidget.item(i, 0)
+                n_item = self.tableWidget.item(i, 1)
                 f.write("\n" + x_item.text() + '\t' + n_item.text())
              
             f.close()
-            cls.fileEdit.setText(filename)
-            cls.logText("Successfully saved configuration file " + filename)
+            self.fileEdit.setText(filename)
+            self.logText("Successfully saved configuration file " + filename)
         except AttributeError:
-            cls.logWarningText("File saving failed: incorrect number of rows."
+            self.logWarningText("File saving failed: incorrect number of rows."
                                + " Make sure that all rows filled")
             f.close()
         except:
-             cls.logWarningText("File saving failed: "
+             self.logWarningText("File saving failed: "
                                  + str(sys.exc_info()[1]))
              f.close()
     
-    def startAnnealClicked(cls):
+    def startAnnealClicked(self):
         try:
-            worker = Worker(cls.startAnneal)
-            cls.threadpool.start(worker)
+            worker = Worker(self.startAnneal)
+            self.threadpool.start(worker)
         except:
-            cls.logWarningText(str(sys.exc_info()[1]))
+            self.logWarningText(str(sys.exc_info()[1]))
 
-    def startAnneal(cls):
+    def startAnneal(self):
         try:
-            cls.logText("Anneal started")
-            cls.startAnnealButton.setEnabled(False)
+            self.logText("Anneal started")
+            self.startAnnealButton.setEnabled(False)
             start_pos = 53
             end_pos = 75
-            Laser. setPower(cls.annealPowerBox.value())
+            Laser. setPower(self.annealPowerBox.value())
             Shutter.setMode(1)
             if Shutter.getToggle() == "1":
                 Shutter.setToggle()
 
-            cls.logText("Moving to start position")
-            Motor.set_velocity_parameters(0, 10, cls.motorDefaultSpeed)
+            self.logText("Moving to start position")
+            Motor.set_velocity_parameters(0, 10, self.motorDefaultSpeed)
             Motor.move_to(start_pos, True)
-            Motor.set_velocity_parameters(0, 10, cls.annealSpeedBox.value())
+            Motor.set_velocity_parameters(0, 10, self.annealSpeedBox.value())
 
             Laser.setOn()
-            cls.logText("Starting to burn")
+            self.logText("Starting to burn")
             Shutter.setToggle()
             Motor.move_to(end_pos, True)
             Shutter.setToggle()
             Laser.setOff()
-            cls.logText("Anneal finished")
-            cls.startAnnealButton.setEnabled(True)
+            self.logText("Anneal finished")
+            self.startAnnealButton.setEnabled(True)
 
 
         except:
@@ -366,16 +407,16 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                 Laser.setOff()
             except:
                 pass
-            cls.logWarningText("Process failed: "+ str(sys.exc_info()[1]))
-            cls.startAnnealButton.setEnabled(True)
+            self.logWarningText("Process failed: "+ str(sys.exc_info()[1]))
+            self.startAnnealButton.setEnabled(True)
 
 
-    def start(cls):
+    def start(self):
         try:
-            power = cls.powerSpinBox.value()
-            Topen = cls.openSpinBox.value()
-            Tperiod = cls.periodSpinBox.value()
-            cls.isNotStarted.clear()
+            power = self.powerSpinBox.value()
+            Topen = self.openSpinBox.value()
+            Tperiod = self.periodSpinBox.value()
+            self.isNotStarted.clear()
 
             Laser.setPower(power)
 
@@ -383,43 +424,43 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             if Shutter.getToggle() == "1":
                 Shutter.setToggle()
             Laser.setOn()
-            cls.logText("Heating laser")
+            self.logText("Heating laser")
 
-            cls.isNotStarted.wait(cls.timeToHeat)
-            if cls.isNotStarted.isSet():
+            self.isNotStarted.wait(self.timeToHeat)
+            if self.isNotStarted.isSet():
                 Laser.setOff()
-                cls.logWarningText("Interrupted")
+                self.logWarningText("Interrupted")
                 return
-            cls.logText("Laser heated. Starting process")
+            self.logText("Laser heated. Starting process")
 
-            for i in range(0, cls.tableWidget.rowCount() - 1):
+            for i in range(0, self.tableWidget.rowCount() - 1):
                     
-                x_item = cls.tableWidget.item(i, 0)
-                n_item = cls.tableWidget.item(i, 1)
+                x_item = self.tableWidget.item(i, 0)
+                n_item = self.tableWidget.item(i, 1)
                 x = (float(x_item.text()))
                 n = (int(n_item.text()))
-                cls.logText("Processing coordinate "
+                self.logText("Processing coordinate "
                              + str(x) + " with " + str(n) + " times")
 
                 Motor.move_to(x, True)
-                if cls.isNotStarted.isSet():
+                if self.isNotStarted.isSet():
                     Laser.setOff()
-                    cls.logWarningText("Interrupted")
+                    self.logWarningText("Interrupted")
                     return
 
-                cls.shutUp(n, Topen, Tperiod - Topen)
+                self.shutUp(n, Topen, Tperiod - Topen)
 
             Laser.setOff()
-            cls.logText("Completed")
-            cls.isNotStarted.set()
+            self.logText("Completed")
+            self.isNotStarted.set()
         except AttributeError:
-            cls.logWarningText("Looks like there are empty values" +
+            self.logWarningText("Looks like there are empty values" +
                                "in coordinates list. Process stopped.")
             Laser.setOff()
-            cls.isNotStarted.set()
+            self.isNotStarted.set()
         except:
-            cls.logWarningText("Process failed: "+ str(sys.exc_info()[1]))
-            cls.isNotStarted.set()
+            self.logWarningText("Process failed: "+ str(sys.exc_info()[1]))
+            self.isNotStarted.set()
             try:
                 Laser.setOff()
             except:
@@ -469,6 +510,12 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         self.tableWidget.setItem(row+1, 0, x_item)
         self.tableWidget.setItem(row+1, 1, n_item)
 
+    def toggleSort(self):
+        if self.sortingBox.isChecked():
+            self.tableWidget.setSortingEnabled(True)
+        else:
+            self.tableWidget.setSortingEnabled(False)
+
     def logText(self, text):
         self.LogField.append(">" + text)
 
@@ -477,12 +524,12 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         self.LogField.append("<span style=\" font-size:8pt; font-weight:600; color:#ff0000;\" >"
                              + ">" + text + "</span>")
 
-    def toggleShutter(cls):
+    def toggleShutter(self):
         try:
             Shutter.setMode(1)
             Shutter.setToggle()
         except:
-            cls.logWarningText(str(sys.exc_info()[1]))
+            self.logWarningText(str(sys.exc_info()[1]))
 
     def shutUp(self, N, Topen, Tclose):
         Shutter.setMode(4)

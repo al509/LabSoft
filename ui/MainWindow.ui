@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Impulse taper maker v0.6 (24.07.2020)</string>
+   <string>Impulse taper maker v0.7 (29.07.2020)</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QGroupBox" name="ConnectionBox">
@@ -399,7 +399,7 @@
       <property name="geometry">
        <rect>
         <x>320</x>
-        <y>10</y>
+        <y>40</y>
         <width>211</width>
         <height>111</height>
        </rect>
@@ -503,24 +503,24 @@
        </layout>
       </widget>
      </widget>
+     <widget class="QCheckBox" name="sortingBox">
+      <property name="geometry">
+       <rect>
+        <x>320</x>
+        <y>10</y>
+        <width>101</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Enable sorting</string>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="tab_2">
      <attribute name="title">
       <string>Tab 2</string>
      </attribute>
-     <widget class="QGraphicsView" name="graphicsView">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>-10</x>
-        <y>-9</y>
-        <width>541</width>
-        <height>401</height>
-       </rect>
-      </property>
-     </widget>
     </widget>
    </widget>
    <widget class="QGroupBox" name="StagesConrtolBox">
