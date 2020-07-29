@@ -1,5 +1,5 @@
 DEBUG = False
-#import os
+import os
 from pathlib import Path
 from serial import SerialException
 from PyQt5 import QtCore, QtWidgets
@@ -11,10 +11,11 @@ from ui import MainWindow as ui
 from libs import SynradLaser, SC10Shutter
 import time
 import threading
+import numpy as np
+import importlib
 
 
 import matplotlib
-import random
 matplotlib.use('Qt5Agg')
 
 
@@ -120,6 +121,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         self.tableWidget.cellActivated.connect(self.insertRow)
         self.tabWidget.currentChanged.connect(self.update_plot)
         self.sortingBox.stateChanged.connect(self.toggleSort)
+        self.generateArrayButton.clicked.connect(self.generateArray)
 
     def setupTable(self):
         self.tableWidget.setColumnCount(2)
@@ -322,6 +324,19 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                 self.tableWidget.setItem(i, 0, x_item)
                 self.tableWidget.setItem(i, 1, n_item)
                 
+            params = f.readline().split() 
+            self.startPosBox.setValue(float(params[0]))
+            self.endPosBox.setValue(float(params[1]))
+            self.stepFuncBox.setValue(float(params[2]))
+            
+            num_lines = int(f.readline())
+            code = ""
+            for i in range(0, num_lines):
+                code = code + f.readline()
+            self.codeBowser.setFontPointSize(12)
+            self.codeBowser.setPlainText(code)
+            
+            f.close()
             self.fileEdit.setText(filename)
             self.logText("Successfully loaded configuration file " + filename)
         except:
@@ -341,7 +356,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             f = open(filepath, 'w')
             filename = filepath.split('/')[-1]
             
-            num_lines = self.tableWidget.rowCount() - 1
+            num_lines = self.tableWidget.rowCount()
             f.write(str(num_lines) + '\n')
             
             f.write(str(self.powerSpinBox.value()) + " ")
@@ -356,7 +371,17 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                 x_item = self.tableWidget.item(i, 0)
                 n_item = self.tableWidget.item(i, 1)
                 f.write("\n" + x_item.text() + '\t' + n_item.text())
-             
+            f.write("\n")
+            
+            f.write(str(self.startPosBox.value()) + " ")
+            f.write(str(self.endPosBox.value()) + " ")
+            f.write(str(self.stepFuncBox.value()) + "\n")
+            
+            lines_code =  self.codeBowser.toPlainText().split('\n')
+            num_lines_code = len(lines_code)
+            f.write(str(num_lines_code) + "\n")
+            f.write(self.codeBowser.toPlainText())
+            
             f.close()
             self.fileEdit.setText(filename)
             self.logText("Successfully saved configuration file " + filename)
@@ -433,7 +458,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                 return
             self.logText("Laser heated. Starting process")
 
-            for i in range(0, self.tableWidget.rowCount() - 1):
+            for i in range(0, self.tableWidget.rowCount()):
                     
                 x_item = self.tableWidget.item(i, 0)
                 n_item = self.tableWidget.item(i, 1)
@@ -516,6 +541,40 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         else:
             self.tableWidget.setSortingEnabled(False)
 
+ 
+    def generateArray(self):
+        try:
+            start_pos = self.startPosBox.value()
+            end_pos = self.endPosBox.value()
+            step = self.stepFuncBox.value()
+            num = int((end_pos - start_pos)/step + 1)
+            xs = np.linspace(start_pos, end_pos, num)    
+            
+            lines =  self.codeBowser.toPlainText().split('\n')
+            with open("temp.py", "w") as f:
+                f.write("def func(x):\n")
+                for line in lines:
+                    f.write("\t" + line + "\n")
+                f.write("\treturn int(n)")
+                f.close()
+            
+            if "temp" in sys.modules:
+                importlib.reload(self.module)
+            else:
+                self.module = importlib.import_module("temp")
+            
+            self.tableWidget.setRowCount(num)
+            for i in range(0, num):
+                x_item = QTableWidgetItem(str(xs[i]))
+                n_item = QTableWidgetItem(str(self.module.func(xs[i])))
+                self.tableWidget.setItem(i, 0, x_item)
+                self.tableWidget.setItem(i, 1, n_item)
+            os.remove("temp.py")  
+            
+            self.logText("Array generated")
+        except ValueError:
+             self.logWarningText(str(sys.exc_info()[1]))
+
     def logText(self, text):
         self.LogField.append(">" + text)
 
@@ -549,7 +608,6 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             pass
         except:
             print(str(sys.exc_info()[1]))
-
 
 
 
