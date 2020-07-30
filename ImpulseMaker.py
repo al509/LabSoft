@@ -155,13 +155,13 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             self.shutterPortLineEdit.setVisible(True)
             self.manualConnectButton.setVisible(True)
             self.AutoDetectButton.setEnabled(False)
-            self.ConnectionBox.setGeometry(QtCore.QRect(20, 20, 201, 161))
+            self.ConnectionBox.setGeometry(QtCore.QRect(10, 20, 201, 161))
         else:
             self.laserPortLineEdit.setVisible(False)
             self.shutterPortLineEdit.setVisible(False)
             self.manualConnectButton.setVisible(False)
             self.AutoDetectButton.setEnabled(True)
-            self.ConnectionBox.setGeometry(QtCore.QRect(20, 20, 201, 121))
+            self.ConnectionBox.setGeometry(QtCore.QRect(10, 20, 201, 121))
 
 
     def autoDetectClicked(self):
