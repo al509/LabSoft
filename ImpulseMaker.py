@@ -81,7 +81,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
          layout.addWidget(self.canvas)
 
     def update_plot(self):
-        if self.tabWidget.currentIndex() == 1:
+        if self.tabWidget.currentIndex() == 1 and self.tableWidget.rowCount() > 1:
             xdata = []
             ydata = []
             num_lines = self.tableWidget.rowCount()
@@ -120,7 +120,6 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         self.tableWidget.cellChanged.connect(self.cellChangeHandler)
         self.tableWidget.cellActivated.connect(self.insertRow)
         self.tabWidget.currentChanged.connect(self.update_plot)
-        self.sortingBox.stateChanged.connect(self.toggleSort)
         self.generateArrayButton.clicked.connect(self.generateArray)
 
     def setupTable(self):
@@ -534,12 +533,6 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         n_item = QTableWidgetItem("0")
         self.tableWidget.setItem(row+1, 0, x_item)
         self.tableWidget.setItem(row+1, 1, n_item)
-
-    def toggleSort(self):
-        if self.sortingBox.isChecked():
-            self.tableWidget.setSortingEnabled(True)
-        else:
-            self.tableWidget.setSortingEnabled(False)
 
  
     def generateArray(self):
