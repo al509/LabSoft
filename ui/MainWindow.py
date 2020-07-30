@@ -11,6 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
+        MainWindow.setEnabled(True)
         MainWindow.resize(800, 600)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -60,6 +61,7 @@ class Ui_MainWindow(object):
         self.LogField.setGeometry(QtCore.QRect(10, 20, 741, 101))
         self.LogField.setObjectName("LogField")
         self.ParametersBox = QtWidgets.QGroupBox(self.centralwidget)
+        self.ParametersBox.setEnabled(True)
         self.ParametersBox.setGeometry(QtCore.QRect(10, 300, 211, 141))
         self.ParametersBox.setObjectName("ParametersBox")
         self.layoutWidget = QtWidgets.QWidget(self.ParametersBox)
@@ -164,7 +166,7 @@ class Ui_MainWindow(object):
         self.tableWidget.setColumnCount(2)
         self.tableWidget.setObjectName("tableWidget")
         self.annealBox = QtWidgets.QGroupBox(self.tab)
-        self.annealBox.setGeometry(QtCore.QRect(320, 40, 211, 111))
+        self.annealBox.setGeometry(QtCore.QRect(320, 10, 211, 111))
         self.annealBox.setObjectName("annealBox")
         self.verticalLayoutWidget_2 = QtWidgets.QWidget(self.annealBox)
         self.verticalLayoutWidget_2.setGeometry(QtCore.QRect(10, 19, 191, 83))
@@ -214,9 +216,6 @@ class Ui_MainWindow(object):
         self.startAnnealButton.setObjectName("startAnnealButton")
         self.horizontalLayout_2.addWidget(self.startAnnealButton)
         self.annealLayout.addLayout(self.horizontalLayout_2)
-        self.sortingBox = QtWidgets.QCheckBox(self.tab)
-        self.sortingBox.setGeometry(QtCore.QRect(320, 10, 101, 17))
-        self.sortingBox.setObjectName("sortingBox")
         self.tabWidget.addTab(self.tab, "")
         self.tab_2 = QtWidgets.QWidget()
         self.tab_2.setObjectName("tab_2")
@@ -352,7 +351,6 @@ class Ui_MainWindow(object):
         self.annealPercentLabel.setText(_translate("MainWindow", "mm/s"))
         self.toggleShutterButton.setText(_translate("MainWindow", "Toggle shutter"))
         self.startAnnealButton.setText(_translate("MainWindow", "Start"))
-        self.sortingBox.setText(_translate("MainWindow", "Enable sorting"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "Main features"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "N(x)"))
         self.codeBowser.setStatusTip(_translate("MainWindow", "\'def()\': and \'return\' parts not necessary. Indentation starts from zero level"))
@@ -360,15 +358,15 @@ class Ui_MainWindow(object):
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:12pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"># Write n(x) function here in Python-stye. For example:</p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"># Write the n(x) function here in the Python style. For example:</p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#000000;\">if x &gt; 60:</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#000000;\">    n = 1</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#000000;\">else:</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#000000;\">    n = 0</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#000000;\"># Consider that you are just writing some func(x) that returns n value.</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#000000;\"># Consider this is the funtion of x that returns n.</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#000000;\">#Note that n truncates to int in the end; x can be float.</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#000000;\"># Be careful, python-injections are posiible as this code interpreting</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#000000;\"># in program without any checks and changes.</span></p></body></html>"))
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#000000;\"># Be careful: Python injections are possiible as this code will be </span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#000000;\"># interpreted in the program without any checks and changes.</span></p></body></html>"))
         self.startPosLabel.setText(_translate("MainWindow", "Start position:"))
         self.endPosLabel.setText(_translate("MainWindow", "End position:"))
         self.stepBox.setText(_translate("MainWindow", "Step:"))

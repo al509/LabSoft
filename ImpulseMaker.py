@@ -18,6 +18,7 @@ from matplotlib.figure import Figure
 
 
 class Worker(QtCore.QRunnable):
+    
     def __init__(self, fn, *args, **kwargs):
         super(Worker, self).__init__()
         # Store constructor arguments (re-used for processing)
@@ -26,12 +27,11 @@ class Worker(QtCore.QRunnable):
         self.kwargs = kwargs
 
     def run(self):
-
         self.fn(*self.args, **self.kwargs)
 
 
 class MplCanvas(FigureCanvasQTAgg):
-
+    
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = fig.add_subplot(111)
@@ -40,6 +40,7 @@ class MplCanvas(FigureCanvasQTAgg):
 
 
 class MainApp(QMainWindow, ui.Ui_MainWindow):
+    
     def __init__(self):
          QMainWindow.__init__(self)
          ui.Ui_MainWindow.__init__(self)
@@ -92,29 +93,43 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             self.canvas.axes.plot(xdata, ydata, 'r')
             # Trigger the canvas to update and redraw.
             self.canvas.draw()
+            
+            
+    def runThread(self, func):
+        worker = Worker(func)
+        self.threadpool.start(worker)  
     
 
     def setupBox(self):
         self.laserPortLineEdit.setVisible(False)
         self.shutterPortLineEdit.setVisible(False)
         self.manualConnectButton.setVisible(False)
+        
+    def interfaceBlock(self, flag):
+        blk = not flag
+        self.ConnectionBox.setEnabled(blk)
+        self.StagesConrtolBox.setEnabled(blk)
+        self.ParametersBox.setEnabled(blk)
+        self.annealBox.setEnabled(blk)
 
     def setupButtons(self):
         self.manualConnectionBox.stateChanged.connect(self.manualConnectionClicked)
         self.AutoDetectButton.clicked.connect(self.autoDetectClicked)
         self.manualConnectButton.clicked.connect(self.manualConnectClicked)
-        self.StagesToZerosButton.clicked.connect(self.stagesToZerosClicked)
-        self.StagesToHomeButton.clicked.connect(self.stagesToHomeClicked)
-        self.MoveStagesButton.clicked.connect(self.moveStagesClicked)
+        self.StagesToZerosButton.clicked.connect(lambda: self.runThread(self.stagesToZerosClicked))
+        self.StagesToHomeButton.clicked.connect(lambda: self.runThread(self.stagesToHomeClicked))
+        self.MoveStagesButton.clicked.connect(lambda: self.runThread(self.moveStagesClicked))
         self.startButton.clicked.connect(self.startClicked)
         self.fileButton.clicked.connect(self.fileClicked)
-        self.startAnnealButton.clicked.connect(self.startAnnealClicked)
+        self.startAnnealButton.clicked.connect(lambda: self.runThread(self.startAnneal))
         self.toggleShutterButton.clicked.connect(self.toggleShutter)
         self.saveButton.clicked.connect(self.saveConfig)
         self.tableWidget.cellChanged.connect(self.cellChangeHandler)
         self.tableWidget.cellActivated.connect(self.insertRow)
         self.tabWidget.currentChanged.connect(self.update_plot)
         self.generateArrayButton.clicked.connect(self.generateArray)
+        
+
 
     def setupTable(self):
         self.tableWidget.setColumnCount(2)
@@ -133,7 +148,6 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         except:
             self.logWarningText("Motor not initialized :"+str(sys.exc_info()[1]))
             self.LogField.append("")
-
 
     def manualConnectionClicked(self):
         if self.manualConnectionBox.isChecked() == True:
@@ -212,16 +226,19 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
     def stagesToZerosClicked(self):
         try:
-
+            self.interfaceBlock(True)
             Motor.set_velocity_parameters(0, 3.5, 4.5)
 
             Motor.move_home(True)
             self.logText('Stages moved to zeros')
+            self.interfaceBlock(False)
         except:
             self.logWarningText(str(sys.exc_info()[1]))
+            self.interfaceBlock(False)
 
     def stagesToHomeClicked(self):
         try:
+            self.interfaceBlock(True)
             Motor.backlash_distance(0)
 
             Motor.set_velocity_parameters(0, 3.5, 4.5)
@@ -230,16 +247,21 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
             Motor.move_to(Home_value2, True)
             self.logText('Stages moved to start position')
+            self.interfaceBlock(False)
         except:
             self.logWarningText(str(sys.exc_info()[1]))
+            self.interfaceBlock(False)
 
     def moveStagesClicked(self):
         try:
+            self.interfaceBlock(True)
             Motor.set_velocity_parameters(0, 3.5, 4.5)
             Motor.move_by(float(self.ui.MoveStagesField.text()), False)
             self.logText('Stages moved')
+            self.interfaceBlock(False)
         except:
             self.logWarningText(str(sys.exc_info()[1]))
+            self.interfaceBlock(False)
 
     def manualConnectClicked(self):
         global Laser
@@ -387,17 +409,10 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                                  + str(sys.exc_info()[1]))
              f.close()
     
-    def startAnnealClicked(self):
-        try:
-            worker = Worker(self.startAnneal)
-            self.threadpool.start(worker)
-        except:
-            self.logWarningText(str(sys.exc_info()[1]))
-
     def startAnneal(self):
         try:
             self.logText("Anneal started")
-            self.startAnnealButton.setEnabled(False)
+            self.interfaceBlock(True)
             start_pos = 53
             end_pos = 75
             Laser. setPower(self.annealPowerBox.value())
@@ -417,20 +432,20 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             Shutter.setToggle()
             Laser.setOff()
             self.logText("Anneal finished")
-            self.startAnnealButton.setEnabled(True)
-
-
+            self.interfaceBlock(False)
         except:
             try:
                 Laser.setOff()
             except:
                 pass
             self.logWarningText("Process failed: "+ str(sys.exc_info()[1]))
-            self.startAnnealButton.setEnabled(True)
+            self.interfaceBlock(False)
 
 
     def start(self):
         try:
+            self.interfaceBlock(True)
+            self.startButton.setEnabled(True)
             power = self.powerSpinBox.value()
             Topen = self.openSpinBox.value()
             Tperiod = self.periodSpinBox.value()
@@ -448,6 +463,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             if self.isNotStarted.isSet():
                 Laser.setOff()
                 self.logWarningText("Interrupted")
+                self.interfaceBlock(False)
                 return
             self.logText("Laser heated. Starting process")
 
@@ -464,6 +480,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                 if self.isNotStarted.isSet():
                     Laser.setOff()
                     self.logWarningText("Interrupted")
+                    self.interfaceBlock(False)
                     return
 
                 self.shutUp(n, Topen, Tperiod - Topen)
@@ -471,14 +488,17 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             Laser.setOff()
             self.logText("Completed")
             self.isNotStarted.set()
+            self.interfaceBlock(False)
         except AttributeError:
             self.logWarningText("Looks like there are empty values" +
                                "in coordinates list. Process stopped.")
             Laser.setOff()
+            self.interfaceBlock(False)
             self.isNotStarted.set()
         except:
             self.logWarningText("Process failed: "+ str(sys.exc_info()[1]))
             self.isNotStarted.set()
+            self.interfaceBlock(False)
             try:
                 Laser.setOff()
             except:
@@ -513,8 +533,6 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             x =x_item.text()
             n = n_item.text()
             
-#            if row + 1 == self.tableWidget.rowCount():
-#                self.tableWidget.insertRow(self.tableWidget.rowCount())
             if x == "" and n == "" and self.tableWidget.rowCount() != 1:
                 self.tableWidget.removeRow(row)
         except ValueError:
