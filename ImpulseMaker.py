@@ -13,12 +13,6 @@ import time
 import threading
 import numpy as np
 import importlib
-
-
-import matplotlib
-matplotlib.use('Qt5Agg')
-
-
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 
