@@ -435,7 +435,8 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             Topen = self.openSpinBox.value()
             Tperiod = self.periodSpinBox.value()
             self.isNotStarted.clear()
-
+            
+            Laser.setMode('MANCLOSED')
             Laser.setPower(power)
 
             Shutter.setMode(1)
