@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
 from PyQt5.QtWidgets import QFileDialog
 import serial.tools.list_ports
 import sys
-from ui import MainWindow as ui
+from ui import IM as ui
 from libs import SynradLaser, SC10Shutter
 import time
 import threading
@@ -18,7 +18,7 @@ from matplotlib.figure import Figure
 
 
 class Worker(QtCore.QRunnable):
-    
+
     def __init__(self, fn, *args, **kwargs):
         super(Worker, self).__init__()
         # Store constructor arguments (re-used for processing)
@@ -31,7 +31,7 @@ class Worker(QtCore.QRunnable):
 
 
 class MplCanvas(FigureCanvasQTAgg):
-    
+
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = fig.add_subplot(111)
@@ -40,7 +40,7 @@ class MplCanvas(FigureCanvasQTAgg):
 
 
 class MainApp(QMainWindow, ui.Ui_MainWindow):
-    
+
     def __init__(self):
          QMainWindow.__init__(self)
          ui.Ui_MainWindow.__init__(self)
@@ -70,7 +70,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
          self.canvas = MplCanvas(self, width=5, height=4, dpi=100)
          toolbar = NavigationToolbar(self.canvas, self)
-         
+
          layout = QtWidgets.QGridLayout(self.tab_2)
          layout.addWidget(toolbar)
          layout.addWidget(self.canvas)
@@ -85,26 +85,26 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                 n_item = self.tableWidget.item(i, 1)
                 x = float(x_item.text())
                 n = int(n_item.text())
-                
+
                 xdata.append(x)
                 ydata.append(n)
-                
+
             self.canvas.axes.cla()  # Clear the canvas.
             self.canvas.axes.plot(xdata, ydata, 'r')
             # Trigger the canvas to update and redraw.
             self.canvas.draw()
-            
-            
+
+
     def runThread(self, func):
         worker = Worker(func)
-        self.threadpool.start(worker)  
-    
+        self.threadpool.start(worker)
+
 
     def setupBox(self):
         self.laserPortLineEdit.setVisible(False)
         self.shutterPortLineEdit.setVisible(False)
         self.manualConnectButton.setVisible(False)
-        
+
     def interfaceBlock(self, flag):
         blk = not flag
         self.ConnectionBox.setEnabled(blk)
@@ -128,7 +128,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         self.tableWidget.cellActivated.connect(self.insertRow)
         self.tabWidget.currentChanged.connect(self.update_plot)
         self.generateArrayButton.clicked.connect(self.generateArray)
-        
+
 
 
     def setupTable(self):
@@ -137,7 +137,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         self.tableWidget.setHorizontalHeaderLabels(["Coordinate", "Number of shots"])
 
     def setupMotor(self):
-        global Motor 
+        global Motor
         try:
 
              import thorlabs_apt as apt
@@ -239,7 +239,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
     def stagesToHomeClicked(self):
         try:
             self.interfaceBlock(True)
-            Motor.backlash_distance(0)
+#            Motor.backlash_distance(0)
 
             Motor.set_velocity_parameters(0, 3.5, 4.5)
 
@@ -308,29 +308,29 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
     def fileClicked(self):
         try:
-            
+
             filepath = QFileDialog.getOpenFileName(self, "Open File", self.filedir,
                                         "Impulse Maker savefile (*.ims)")[0]
-        
+
             self.filedir = str(Path(filepath).parent)
             if filepath == "":
                 self.logText("File load aborted")
                 return
             f = open(filepath, 'r')
             filename = filepath.split('/')[-1]
-            
+
             num_lines = int(f.readline())
             self.tableWidget.setRowCount(num_lines)
-            
+
             params = f.readline().split()
             self.powerSpinBox.setValue(float(params[0]))
             self.openSpinBox.setValue(float(params[1]))
             self.periodSpinBox.setValue(float(params[2]))
-            
-            params = f.readline().split() 
+
+            params = f.readline().split()
             self.annealPowerBox.setValue(float(params[0]))
             self.annealSpeedBox.setValue(float(params[1]))
-            
+
             for i in range(0, num_lines):
                 line = f.readline()
                 columns = line.split()
@@ -338,65 +338,65 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                 n_item = QTableWidgetItem(columns[1])
                 self.tableWidget.setItem(i, 0, x_item)
                 self.tableWidget.setItem(i, 1, n_item)
-                
-            params = f.readline().split() 
+
+            params = f.readline().split()
             self.startPosBox.setValue(float(params[0]))
             self.endPosBox.setValue(float(params[1]))
             self.stepFuncBox.setValue(float(params[2]))
-            
+
             num_lines = int(f.readline())
             code = ""
             for i in range(0, num_lines):
                 code = code + f.readline()
             self.codeBowser.setFontPointSize(12)
             self.codeBowser.setPlainText(code)
-            
+
             f.close()
             self.fileEdit.setText(filename)
             self.logText("Successfully loaded configuration file " + filename)
         except:
              self.logWarningText("File loading failed: "
                                  + str(sys.exc_info()[1]))
-             
+
     def saveConfig(self):
         try:
             filepath = QFileDialog.getSaveFileName(self, "Open File", self.filedir,
                                         "Impulse Maker savefile (*.ims)")[0]
-            
+
             self.filedir = str(Path(filepath).parent)
-        
+
             if filepath == "":
                 self.logText("File save aborted")
                 return
             f = open(filepath, 'w')
             filename = filepath.split('/')[-1]
-            
+
             num_lines = self.tableWidget.rowCount()
             f.write(str(num_lines) + '\n')
-            
+
             f.write(str(self.powerSpinBox.value()) + " ")
             f.write(str(self.openSpinBox.value()) + " ")
             f.write(str(self.periodSpinBox.value()) + "\n")
-            
+
             f.write(str(self.annealPowerBox.value()) + " ")
             f.write(str(self.annealSpeedBox.value()))
-            
-            
+
+
             for i in range(0, num_lines):
                 x_item = self.tableWidget.item(i, 0)
                 n_item = self.tableWidget.item(i, 1)
                 f.write("\n" + x_item.text() + '\t' + n_item.text())
             f.write("\n")
-            
+
             f.write(str(self.startPosBox.value()) + " ")
             f.write(str(self.endPosBox.value()) + " ")
             f.write(str(self.stepFuncBox.value()) + "\n")
-            
+
             lines_code =  self.codeBowser.toPlainText().split('\n')
             num_lines_code = len(lines_code)
             f.write(str(num_lines_code) + "\n")
             f.write(self.codeBowser.toPlainText())
-            
+
             f.close()
             self.fileEdit.setText(filename)
             self.logText("Successfully saved configuration file " + filename)
@@ -408,7 +408,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
              self.logWarningText("File saving failed: "
                                  + str(sys.exc_info()[1]))
              f.close()
-    
+
     def startAnneal(self):
         try:
             self.logText("Anneal started")
@@ -468,7 +468,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             self.logText("Laser heated. Starting process")
 
             for i in range(0, self.tableWidget.rowCount()):
-                    
+
                 x_item = self.tableWidget.item(i, 0)
                 n_item = self.tableWidget.item(i, 1)
                 x = (float(x_item.text()))
@@ -519,42 +519,42 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
     def cellChangeHandler(self, row, collumn):
         try:
-            
+
             x_item = self.tableWidget.item(row, 0)
             n_item = self.tableWidget.item(row, 1)
-            
+
             if x_item is None:
                 self.tableWidget.setItem(row, 0, QTableWidgetItem(""))
                 return
             if n_item is None:
                 self.tableWidget.setItem(row, 1, QTableWidgetItem(""))
                 return
-            
+
             x =x_item.text()
             n = n_item.text()
-            
+
             if x == "" and n == "" and self.tableWidget.rowCount() != 1:
                 self.tableWidget.removeRow(row)
         except ValueError:
             self.logWarningText("Process failed: "+ str(sys.exc_info()[1]))
-            
+
     def insertRow(self, row, collumn):
         self.tableWidget.insertRow(row+1)
-        
+
         x_item = QTableWidgetItem("0")
         n_item = QTableWidgetItem("0")
         self.tableWidget.setItem(row+1, 0, x_item)
         self.tableWidget.setItem(row+1, 1, n_item)
 
- 
+
     def generateArray(self):
         try:
             start_pos = self.startPosBox.value()
             end_pos = self.endPosBox.value()
             step = self.stepFuncBox.value()
             num = int((end_pos - start_pos)/step + 1)
-            xs = np.linspace(start_pos, end_pos, num)    
-            
+            xs = np.linspace(start_pos, end_pos, num)
+
             lines =  self.codeBowser.toPlainText().split('\n')
             with open("temp.py", "w") as f:
                 f.write("def func(x):\n")
@@ -562,20 +562,20 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                     f.write("\t" + line + "\n")
                 f.write("\treturn int(n)")
                 f.close()
-            
+
             if "temp" in sys.modules:
                 importlib.reload(self.module)
             else:
                 self.module = importlib.import_module("temp")
-            
+
             self.tableWidget.setRowCount(num)
             for i in range(0, num):
                 x_item = QTableWidgetItem(str(xs[i]))
                 n_item = QTableWidgetItem(str(self.module.func(xs[i])))
                 self.tableWidget.setItem(i, 0, x_item)
                 self.tableWidget.setItem(i, 1, n_item)
-            os.remove("temp.py")  
-            
+            os.remove("temp.py")
+
             self.logText("Array generated")
         except ValueError:
              self.logWarningText(str(sys.exc_info()[1]))
