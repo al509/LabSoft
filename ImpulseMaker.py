@@ -256,7 +256,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         try:
             self.interfaceBlock(True)
             Motor.set_velocity_parameters(0, 3.5, 4.5)
-            Motor.move_by(float(self.ui.MoveStagesField.text()), False)
+            Motor.move_by(float(self.MoveStagesField.text()), False)
             self.logText('Stages moved')
             self.interfaceBlock(False)
         except:
@@ -413,6 +413,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         try:
             self.logText("Anneal started")
             self.interfaceBlock(True)
+            self.startButton.setEnabled(True)
             start_pos = 53
             end_pos = 75
             Laser. setPower(self.annealPowerBox.value())
@@ -445,7 +446,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
     def start(self):
         try:
             self.interfaceBlock(True)
-            self.startButton.setEnabled(True)
+            self.ParametersBox.setEnabled(True)
             power = self.powerSpinBox.value()
             Topen = self.openSpinBox.value()
             Tperiod = self.periodSpinBox.value()
