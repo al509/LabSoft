@@ -447,6 +447,12 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         try:
             self.interfaceBlock(True)
             self.ParametersBox.setEnabled(True)
+            self.fileButton.setEnabled(False)
+            self.powerSpinBox.setEnabled(False)
+            self.openSpinBox.setEnabled(False)
+            self.periodSpinBox.setEnabled(False)
+            self.saveButton.setEnabled(False)
+
             power = self.powerSpinBox.value()
             Topen = self.openSpinBox.value()
             Tperiod = self.periodSpinBox.value()
@@ -465,10 +471,28 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                 Laser.setOff()
                 self.logWarningText("Interrupted")
                 self.interfaceBlock(False)
+                self.fileButton.setEnabled(True)
+                self.powerSpinBox.setEnabled(True)
+                self.openSpinBox.setEnabled(True)
+                self.periodSpinBox.setEnabled(True)
+                self.saveButton.setEnabled(True)
+                self.startButton.setEnabled(True)
                 return
             self.logText("Laser heated. Starting process")
 
             for i in range(0, self.tableWidget.rowCount()):
+
+                if self.isNotStarted.isSet():
+                    Laser.setOff()
+                    self.logWarningText("Interrupted")
+                    self.interfaceBlock(False)
+                    self.fileButton.setEnabled(True)
+                    self.powerSpinBox.setEnabled(True)
+                    self.openSpinBox.setEnabled(True)
+                    self.periodSpinBox.setEnabled(True)
+                    self.saveButton.setEnabled(True)
+                    self.startButton.setEnabled(True)
+                    return
 
                 x_item = self.tableWidget.item(i, 0)
                 n_item = self.tableWidget.item(i, 1)
@@ -476,14 +500,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                 n = (int(n_item.text()))
                 self.logText("Processing coordinate "
                              + str(x) + " with " + str(n) + " times")
-
                 Motor.move_to(x, True)
-                if self.isNotStarted.isSet():
-                    Laser.setOff()
-                    self.logWarningText("Interrupted")
-                    self.interfaceBlock(False)
-                    return
-
                 self.shutUp(n, Topen, Tperiod - Topen)
 
             Laser.setOff()
@@ -509,6 +526,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         try:
             if self.isNotStarted.isSet() == False:
                 self.isNotStarted.set()
+                self.startButton.setEnabled(False)
                 return
 
             else:
@@ -618,15 +636,13 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
 
 def main():
-    if not QApplication.instance():
-        app = QApplication(sys.argv)
+    if not QtWidgets.QApplication.instance():
+        app = QtWidgets.QApplication(sys.argv)
     else:
-        app = QApplication.instance()
+        app = QtWidgets.QApplication.instance()
     main = MainApp()
     main.show()
-    app.exec()
-    del(main)
-    sys.exit()
+
     return main
 
 
