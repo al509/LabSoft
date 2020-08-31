@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
 from PyQt5.QtWidgets import QFileDialog
 import serial.tools.list_ports
 import sys
-from ui import MainWindow as ui
+from ui import IM as ui
 from libs import SynradLaser, SC10Shutter
 import time
 import threading
@@ -18,6 +18,7 @@ from matplotlib.figure import Figure
 
 
 class Worker(QtCore.QRunnable):
+
     def __init__(self, fn, *args, **kwargs):
         super(Worker, self).__init__()
         # Store constructor arguments (re-used for processing)
@@ -26,7 +27,6 @@ class Worker(QtCore.QRunnable):
         self.kwargs = kwargs
 
     def run(self):
-
         self.fn(*self.args, **self.kwargs)
 
 
@@ -40,6 +40,7 @@ class MplCanvas(FigureCanvasQTAgg):
 
 
 class MainApp(QMainWindow, ui.Ui_MainWindow):
+
     def __init__(self):
          QMainWindow.__init__(self)
          ui.Ui_MainWindow.__init__(self)
@@ -69,7 +70,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
          self.canvas = MplCanvas(self, width=5, height=4, dpi=100)
          toolbar = NavigationToolbar(self.canvas, self)
-         
+
          layout = QtWidgets.QGridLayout(self.tab_2)
          layout.addWidget(toolbar)
          layout.addWidget(self.canvas)
@@ -84,31 +85,43 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                 n_item = self.tableWidget.item(i, 1)
                 x = float(x_item.text())
                 n = int(n_item.text())
-                
+
                 xdata.append(x)
                 ydata.append(n)
-                
+
             self.canvas.axes.cla()  # Clear the canvas.
             self.canvas.axes.plot(xdata, ydata, 'r')
             # Trigger the canvas to update and redraw.
             self.canvas.draw()
-    
+
+
+    def runThread(self, func):
+        worker = Worker(func)
+        self.threadpool.start(worker)
+
 
     def setupBox(self):
         self.laserPortLineEdit.setVisible(False)
         self.shutterPortLineEdit.setVisible(False)
         self.manualConnectButton.setVisible(False)
 
+    def interfaceBlock(self, flag):
+        blk = not flag
+        self.ConnectionBox.setEnabled(blk)
+        self.StagesConrtolBox.setEnabled(blk)
+        self.ParametersBox.setEnabled(blk)
+        self.annealBox.setEnabled(blk)
+
     def setupButtons(self):
         self.manualConnectionBox.stateChanged.connect(self.manualConnectionClicked)
         self.AutoDetectButton.clicked.connect(self.autoDetectClicked)
         self.manualConnectButton.clicked.connect(self.manualConnectClicked)
-        self.StagesToZerosButton.clicked.connect(self.stagesToZerosClicked)
-        self.StagesToHomeButton.clicked.connect(self.stagesToHomeClicked)
-        self.MoveStagesButton.clicked.connect(self.moveStagesClicked)
+        self.StagesToZerosButton.clicked.connect(lambda: self.runThread(self.stagesToZerosClicked))
+        self.StagesToHomeButton.clicked.connect(lambda: self.runThread(self.stagesToHomeClicked))
+        self.MoveStagesButton.clicked.connect(lambda: self.runThread(self.moveStagesClicked))
         self.startButton.clicked.connect(self.startClicked)
         self.fileButton.clicked.connect(self.fileClicked)
-        self.startAnnealButton.clicked.connect(self.startAnnealClicked)
+        self.startAnnealButton.clicked.connect(lambda: self.runThread(self.startAnneal))
         self.toggleShutterButton.clicked.connect(self.toggleShutter)
         self.saveButton.clicked.connect(self.saveConfig)
         self.tableWidget.cellChanged.connect(self.cellChangeHandler)
@@ -116,13 +129,15 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         self.tabWidget.currentChanged.connect(self.update_plot)
         self.generateArrayButton.clicked.connect(self.generateArray)
 
+
+
     def setupTable(self):
         self.tableWidget.setColumnCount(2)
         self.tableWidget.setRowCount(1)
         self.tableWidget.setHorizontalHeaderLabels(["Coordinate", "Number of shots"])
 
     def setupMotor(self):
-        global Motor 
+        global Motor
         try:
 
              import thorlabs_apt as apt
@@ -134,20 +149,19 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             self.logWarningText("Motor not initialized :"+str(sys.exc_info()[1]))
             self.LogField.append("")
 
-
     def manualConnectionClicked(self):
         if self.manualConnectionBox.isChecked() == True:
             self.laserPortLineEdit.setVisible(True)
             self.shutterPortLineEdit.setVisible(True)
             self.manualConnectButton.setVisible(True)
             self.AutoDetectButton.setEnabled(False)
-            self.ConnectionBox.setGeometry(QtCore.QRect(20, 20, 201, 161))
+            self.ConnectionBox.setGeometry(QtCore.QRect(10, 20, 201, 161))
         else:
             self.laserPortLineEdit.setVisible(False)
             self.shutterPortLineEdit.setVisible(False)
             self.manualConnectButton.setVisible(False)
             self.AutoDetectButton.setEnabled(True)
-            self.ConnectionBox.setGeometry(QtCore.QRect(20, 20, 201, 121))
+            self.ConnectionBox.setGeometry(QtCore.QRect(10, 20, 201, 121))
 
 
     def autoDetectClicked(self):
@@ -212,17 +226,20 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
     def stagesToZerosClicked(self):
         try:
-
+            self.interfaceBlock(True)
             Motor.set_velocity_parameters(0, 3.5, 4.5)
 
             Motor.move_home(True)
             self.logText('Stages moved to zeros')
+            self.interfaceBlock(False)
         except:
             self.logWarningText(str(sys.exc_info()[1]))
+            self.interfaceBlock(False)
 
     def stagesToHomeClicked(self):
         try:
-            Motor.backlash_distance(0)
+            self.interfaceBlock(True)
+#            Motor.backlash_distance(0)
 
             Motor.set_velocity_parameters(0, 3.5, 4.5)
 
@@ -230,16 +247,21 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
             Motor.move_to(Home_value2, True)
             self.logText('Stages moved to start position')
+            self.interfaceBlock(False)
         except:
             self.logWarningText(str(sys.exc_info()[1]))
+            self.interfaceBlock(False)
 
     def moveStagesClicked(self):
         try:
+            self.interfaceBlock(True)
             Motor.set_velocity_parameters(0, 3.5, 4.5)
-            Motor.move_by(float(self.ui.MoveStagesField.text()), False)
+            Motor.move_by(float(self.MoveStagesField.text()), False)
             self.logText('Stages moved')
+            self.interfaceBlock(False)
         except:
             self.logWarningText(str(sys.exc_info()[1]))
+            self.interfaceBlock(False)
 
     def manualConnectClicked(self):
         global Laser
@@ -286,29 +308,29 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
     def fileClicked(self):
         try:
-            
+
             filepath = QFileDialog.getOpenFileName(self, "Open File", self.filedir,
                                         "Impulse Maker savefile (*.ims)")[0]
-        
+
             self.filedir = str(Path(filepath).parent)
             if filepath == "":
                 self.logText("File load aborted")
                 return
             f = open(filepath, 'r')
             filename = filepath.split('/')[-1]
-            
+
             num_lines = int(f.readline())
             self.tableWidget.setRowCount(num_lines)
-            
+
             params = f.readline().split()
             self.powerSpinBox.setValue(float(params[0]))
             self.openSpinBox.setValue(float(params[1]))
             self.periodSpinBox.setValue(float(params[2]))
-            
-            params = f.readline().split() 
+
+            params = f.readline().split()
             self.annealPowerBox.setValue(float(params[0]))
             self.annealSpeedBox.setValue(float(params[1]))
-            
+
             for i in range(0, num_lines):
                 line = f.readline()
                 columns = line.split()
@@ -316,65 +338,65 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                 n_item = QTableWidgetItem(columns[1])
                 self.tableWidget.setItem(i, 0, x_item)
                 self.tableWidget.setItem(i, 1, n_item)
-                
-            params = f.readline().split() 
+
+            params = f.readline().split()
             self.startPosBox.setValue(float(params[0]))
             self.endPosBox.setValue(float(params[1]))
             self.stepFuncBox.setValue(float(params[2]))
-            
+
             num_lines = int(f.readline())
             code = ""
             for i in range(0, num_lines):
                 code = code + f.readline()
             self.codeBowser.setFontPointSize(12)
             self.codeBowser.setPlainText(code)
-            
+
             f.close()
             self.fileEdit.setText(filename)
             self.logText("Successfully loaded configuration file " + filename)
         except:
              self.logWarningText("File loading failed: "
                                  + str(sys.exc_info()[1]))
-             
+
     def saveConfig(self):
         try:
             filepath = QFileDialog.getSaveFileName(self, "Open File", self.filedir,
                                         "Impulse Maker savefile (*.ims)")[0]
-            
+
             self.filedir = str(Path(filepath).parent)
-        
+
             if filepath == "":
                 self.logText("File save aborted")
                 return
             f = open(filepath, 'w')
             filename = filepath.split('/')[-1]
-            
+
             num_lines = self.tableWidget.rowCount()
             f.write(str(num_lines) + '\n')
-            
+
             f.write(str(self.powerSpinBox.value()) + " ")
             f.write(str(self.openSpinBox.value()) + " ")
             f.write(str(self.periodSpinBox.value()) + "\n")
-            
+
             f.write(str(self.annealPowerBox.value()) + " ")
             f.write(str(self.annealSpeedBox.value()))
-            
-            
+
+
             for i in range(0, num_lines):
                 x_item = self.tableWidget.item(i, 0)
                 n_item = self.tableWidget.item(i, 1)
                 f.write("\n" + x_item.text() + '\t' + n_item.text())
             f.write("\n")
-            
+
             f.write(str(self.startPosBox.value()) + " ")
             f.write(str(self.endPosBox.value()) + " ")
             f.write(str(self.stepFuncBox.value()) + "\n")
-            
+
             lines_code =  self.codeBowser.toPlainText().split('\n')
             num_lines_code = len(lines_code)
             f.write(str(num_lines_code) + "\n")
             f.write(self.codeBowser.toPlainText())
-            
+
             f.close()
             self.fileEdit.setText(filename)
             self.logText("Successfully saved configuration file " + filename)
@@ -386,18 +408,12 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
              self.logWarningText("File saving failed: "
                                  + str(sys.exc_info()[1]))
              f.close()
-    
-    def startAnnealClicked(self):
-        try:
-            worker = Worker(self.startAnneal)
-            self.threadpool.start(worker)
-        except:
-            self.logWarningText(str(sys.exc_info()[1]))
 
     def startAnneal(self):
         try:
             self.logText("Anneal started")
-            self.startAnnealButton.setEnabled(False)
+            self.interfaceBlock(True)
+            self.startButton.setEnabled(True)
             start_pos = 53
             end_pos = 75
             Laser. setPower(self.annealPowerBox.value())
@@ -417,20 +433,26 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             Shutter.setToggle()
             Laser.setOff()
             self.logText("Anneal finished")
-            self.startAnnealButton.setEnabled(True)
-
-
+            self.interfaceBlock(False)
         except:
             try:
                 Laser.setOff()
             except:
                 pass
             self.logWarningText("Process failed: "+ str(sys.exc_info()[1]))
-            self.startAnnealButton.setEnabled(True)
+            self.interfaceBlock(False)
 
 
     def start(self):
         try:
+            self.interfaceBlock(True)
+            self.ParametersBox.setEnabled(True)
+            self.fileButton.setEnabled(False)
+            self.powerSpinBox.setEnabled(False)
+            self.openSpinBox.setEnabled(False)
+            self.periodSpinBox.setEnabled(False)
+            self.saveButton.setEnabled(False)
+
             power = self.powerSpinBox.value()
             Topen = self.openSpinBox.value()
             Tperiod = self.periodSpinBox.value()
@@ -449,37 +471,53 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             if self.isNotStarted.isSet():
                 Laser.setOff()
                 self.logWarningText("Interrupted")
+                self.interfaceBlock(False)
+                self.fileButton.setEnabled(True)
+                self.powerSpinBox.setEnabled(True)
+                self.openSpinBox.setEnabled(True)
+                self.periodSpinBox.setEnabled(True)
+                self.saveButton.setEnabled(True)
+                self.startButton.setEnabled(True)
                 return
             self.logText("Laser heated. Starting process")
 
             for i in range(0, self.tableWidget.rowCount()):
-                    
+
+                if self.isNotStarted.isSet():
+                    Laser.setOff()
+                    self.logWarningText("Interrupted")
+                    self.interfaceBlock(False)
+                    self.fileButton.setEnabled(True)
+                    self.powerSpinBox.setEnabled(True)
+                    self.openSpinBox.setEnabled(True)
+                    self.periodSpinBox.setEnabled(True)
+                    self.saveButton.setEnabled(True)
+                    self.startButton.setEnabled(True)
+                    return
+
                 x_item = self.tableWidget.item(i, 0)
                 n_item = self.tableWidget.item(i, 1)
                 x = (float(x_item.text()))
                 n = (int(n_item.text()))
                 self.logText("Processing coordinate "
                              + str(x) + " with " + str(n) + " times")
-
                 Motor.move_to(x, True)
-                if self.isNotStarted.isSet():
-                    Laser.setOff()
-                    self.logWarningText("Interrupted")
-                    return
-
                 self.shutUp(n, Topen, Tperiod - Topen)
 
             Laser.setOff()
             self.logText("Completed")
             self.isNotStarted.set()
+            self.interfaceBlock(False)
         except AttributeError:
             self.logWarningText("Looks like there are empty values" +
                                "in coordinates list. Process stopped.")
             Laser.setOff()
+            self.interfaceBlock(False)
             self.isNotStarted.set()
         except:
             self.logWarningText("Process failed: "+ str(sys.exc_info()[1]))
             self.isNotStarted.set()
+            self.interfaceBlock(False)
             try:
                 Laser.setOff()
             except:
@@ -489,6 +527,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         try:
             if self.isNotStarted.isSet() == False:
                 self.isNotStarted.set()
+                self.startButton.setEnabled(False)
                 return
 
             else:
@@ -500,44 +539,42 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
     def cellChangeHandler(self, row, collumn):
         try:
-            
+
             x_item = self.tableWidget.item(row, 0)
             n_item = self.tableWidget.item(row, 1)
-            
+
             if x_item is None:
                 self.tableWidget.setItem(row, 0, QTableWidgetItem(""))
                 return
             if n_item is None:
                 self.tableWidget.setItem(row, 1, QTableWidgetItem(""))
                 return
-            
+
             x =x_item.text()
             n = n_item.text()
-            
-#            if row + 1 == self.tableWidget.rowCount():
-#                self.tableWidget.insertRow(self.tableWidget.rowCount())
+
             if x == "" and n == "" and self.tableWidget.rowCount() != 1:
                 self.tableWidget.removeRow(row)
         except ValueError:
             self.logWarningText("Process failed: "+ str(sys.exc_info()[1]))
-            
+
     def insertRow(self, row, collumn):
         self.tableWidget.insertRow(row+1)
-        
+
         x_item = QTableWidgetItem("0")
         n_item = QTableWidgetItem("0")
         self.tableWidget.setItem(row+1, 0, x_item)
         self.tableWidget.setItem(row+1, 1, n_item)
 
- 
+
     def generateArray(self):
         try:
             start_pos = self.startPosBox.value()
             end_pos = self.endPosBox.value()
             step = self.stepFuncBox.value()
             num = int((end_pos - start_pos)/step + 1)
-            xs = np.linspace(start_pos, end_pos, num)    
-            
+            xs = np.linspace(start_pos, end_pos, num)
+
             lines =  self.codeBowser.toPlainText().split('\n')
             with open("temp.py", "w") as f:
                 f.write("def func(x):\n")
@@ -545,20 +582,20 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                     f.write("\t" + line + "\n")
                 f.write("\treturn int(n)")
                 f.close()
-            
+
             if "temp" in sys.modules:
                 importlib.reload(self.module)
             else:
                 self.module = importlib.import_module("temp")
-            
+
             self.tableWidget.setRowCount(num)
             for i in range(0, num):
                 x_item = QTableWidgetItem(str(xs[i]))
                 n_item = QTableWidgetItem(str(self.module.func(xs[i])))
                 self.tableWidget.setItem(i, 0, x_item)
                 self.tableWidget.setItem(i, 1, n_item)
-            os.remove("temp.py")  
-            
+            os.remove("temp.py")
+
             self.logText("Array generated")
         except ValueError:
              self.logWarningText(str(sys.exc_info()[1]))
@@ -600,15 +637,17 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
 
 def main():
-    if not QApplication.instance():
-        app = QApplication(sys.argv)
+    if not QtWidgets.QApplication.instance():
+        app = QtWidgets.QApplication(sys.argv)
     else:
-        app = QApplication.instance()
+        app = QtWidgets.QApplication.instance()
+             
+    
     main = MainApp()
     main.show()
-    app.exec()
-    del(main)
-    sys.exit()
+    ####################
+#    sys.exit(app.exec())
+    ####################
     return main
 
 
