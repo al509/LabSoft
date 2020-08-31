@@ -640,9 +640,13 @@ def main():
         app = QtWidgets.QApplication(sys.argv)
     else:
         app = QtWidgets.QApplication.instance()
+             
+    
     main = MainApp()
     main.show()
-
+    ####################
+#    sys.exit(app.exec())
+    ####################
     return main
 
 
