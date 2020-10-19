@@ -74,6 +74,10 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
          layout = QtWidgets.QGridLayout(self.tab_2)
          layout.addWidget(toolbar)
          layout.addWidget(self.canvas)
+         
+         timer = QtCore.QTimer()
+         timer.timeout.connect(lambda:self.tabWidget.setStatusTip("Current stage position: " + str(Motor.position())))
+         timer.start(100)  # every 100 milliseconds
 
     def update_plot(self):
         if self.tabWidget.currentIndex() == 1 and self.tableWidget.rowCount() > 1:
@@ -93,6 +97,8 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             self.canvas.axes.plot(xdata, ydata, 'r')
             # Trigger the canvas to update and redraw.
             self.canvas.draw()
+            
+
 
 
     def runThread(self, func):

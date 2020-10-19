@@ -25,6 +25,12 @@
   <property name="windowTitle">
    <string>Impulse maker v0.71 (30.07.2020)</string>
   </property>
+  <property name="toolTip">
+   <string/>
+  </property>
+  <property name="statusTip">
+   <string/>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QGroupBox" name="ConnectionBox">
     <property name="geometry">
@@ -333,6 +339,9 @@
       <width>541</width>
       <height>411</height>
      </rect>
+    </property>
+    <property name="statusTip">
+     <string>Current stage position:</string>
     </property>
     <property name="currentIndex">
      <number>0</number>

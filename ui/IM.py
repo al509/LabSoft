@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\Александр\Desktop\work\6. Impulse maker\ImpulseMaker\ui\MainWindow.ui'
+# Form implementation generated from reading ui file 'C:\Users\Александр\Desktop\work\6. Impulse maker\ImpulseMaker\ui\IM.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
@@ -14,6 +14,8 @@ class Ui_MainWindow(object):
         MainWindow.resize(800, 600)
         MainWindow.setMinimumSize(QtCore.QSize(800, 600))
         MainWindow.setMaximumSize(QtCore.QSize(800, 600))
+        MainWindow.setToolTip("")
+        MainWindow.setStatusTip("")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.ConnectionBox = QtWidgets.QGroupBox(self.centralwidget)
@@ -345,6 +347,7 @@ class Ui_MainWindow(object):
         self.periodMsLabel.setText(_translate("MainWindow", "ms"))
         self.saveButton.setText(_translate("MainWindow", "Save config"))
         self.startButton.setText(_translate("MainWindow", "Start/stop"))
+        self.tabWidget.setStatusTip(_translate("MainWindow", "Current stage position:"))
         self.tableWidget.setStatusTip(_translate("MainWindow", "Enter - create new row; empty rows will be deleted automatically."))
         self.tableWidget.setSortingEnabled(False)
         self.annealBox.setTitle(_translate("MainWindow", "Fiber annealing"))
@@ -383,4 +386,14 @@ class Ui_MainWindow(object):
         self.StagesToZerosButton.setText(_translate("MainWindow", "Stages to zeros"))
         self.MoveStagesButton.setText(_translate("MainWindow", "Move stages"))
         self.StagesToHomeButton.setText(_translate("MainWindow", "Stages to home"))
+
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    MainWindow = QtWidgets.QMainWindow()
+    ui = Ui_MainWindow()
+    ui.setupUi(MainWindow)
+    MainWindow.show()
+    sys.exit(app.exec_())
 
