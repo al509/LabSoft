@@ -258,9 +258,9 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             Motor.set_velocity_parameters(0, 3.5, 4.5)
             Motor.move_by(float(self.MoveStagesField.text()), False)
             self.logText('Stages moved')
-            self.interfaceBlock(False)
         except:
             self.logWarningText(str(sys.exc_info()[1]))
+            self.interfaceBlock(False)
             self.interfaceBlock(False)
 
     def manualConnectClicked(self):
@@ -513,11 +513,23 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                                "in coordinates list. Process stopped.")
             Laser.setOff()
             self.interfaceBlock(False)
+            self.ParametersBox.setEnabled(True)
+            self.fileButton.setEnabled(True)
+            self.powerSpinBox.setEnabled(True)
+            self.openSpinBox.setEnabled(True)
+            self.periodSpinBox.setEnabled(True)
+            self.saveButton.setEnabled(True)
             self.isNotStarted.set()
         except:
             self.logWarningText("Process failed: "+ str(sys.exc_info()[1]))
             self.isNotStarted.set()
             self.interfaceBlock(False)
+            self.ParametersBox.setEnabled(True)
+            self.fileButton.setEnabled(True)
+            self.powerSpinBox.setEnabled(True)
+            self.openSpinBox.setEnabled(True)
+            self.periodSpinBox.setEnabled(True)
+            self.saveButton.setEnabled(True)
             try:
                 Laser.setOff()
             except:
