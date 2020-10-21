@@ -127,6 +127,8 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         self.openSpinBox.setEnabled(blk)
         self.periodSpinBox.setEnabled(blk)
         self.saveButton.setEnabled(blk)
+        if (flag == False):
+            self.startButton.setEnabled(True)
 
     def setupButtons(self):
         self.manualConnectionBox.stateChanged.connect(self.manualConnectionClicked)
@@ -482,6 +484,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                 Laser.setOff()
                 self.logWarningText("Interrupted")
                 self.startBlock(False)
+                self.startButton.setEnabled(True)
                 return
             self.logText("Laser heated. Starting process")
 
@@ -525,7 +528,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         try:
             if self.isNotStarted.isSet() == False:
                 self.isNotStarted.set()
-#                self.startButton.setEnabled(False)
+                self.startButton.setEnabled(False)
                 return
 
             else:
