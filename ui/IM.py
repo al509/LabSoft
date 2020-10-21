@@ -306,6 +306,7 @@ class Ui_MainWindow(object):
         self.MoveStagesButton.setObjectName("MoveStagesButton")
         self.StagesLayout.addWidget(self.MoveStagesButton, 2, 0, 1, 1)
         self.StagesToHomeButton = QtWidgets.QPushButton(self.gridLayoutWidget)
+        self.StagesToHomeButton.setEnabled(False)
         self.StagesToHomeButton.setObjectName("StagesToHomeButton")
         self.StagesLayout.addWidget(self.StagesToHomeButton, 1, 0, 1, 2)
         MainWindow.setCentralWidget(self.centralwidget)

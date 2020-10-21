@@ -253,6 +253,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         except:
             self.logWarningText(str(sys.exc_info()[1]))
             self.interfaceBlock(False)
+            self.StagesToHomeButton.setEnabled(True)
 
     def stagesToHomeClicked(self):
         try:
