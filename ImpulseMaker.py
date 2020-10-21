@@ -74,7 +74,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
          layout = QtWidgets.QGridLayout(self.tab_2)
          layout.addWidget(toolbar)
          layout.addWidget(self.canvas)
-         
+
          timer = QtCore.QTimer()
          timer.timeout.connect(lambda:self.tabWidget.setStatusTip("Current stage position: " + str(Motor.position())))
          timer.start(100)  # every 100 milliseconds
@@ -97,7 +97,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             self.canvas.axes.plot(xdata, ydata, 'r')
             # Trigger the canvas to update and redraw.
             self.canvas.draw()
-            
+
 
 
 
@@ -117,7 +117,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         self.StagesConrtolBox.setEnabled(blk)
         self.ParametersBox.setEnabled(blk)
         self.annealBox.setEnabled(blk)
-        
+
     def startBlock(self, flag):
         self.interfaceBlock(flag)
         blk = not flag
@@ -467,7 +467,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             Topen = self.openSpinBox.value()
             Tperiod = self.periodSpinBox.value()
             self.isNotStarted.clear()
-            
+
             Laser.setMode('MANCLOSED')
             Laser.setPower(power)
 
@@ -525,7 +525,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         try:
             if self.isNotStarted.isSet() == False:
                 self.isNotStarted.set()
-                self.startButton.setEnabled(False)
+#                self.startButton.setEnabled(False)
                 return
 
             else:
@@ -639,8 +639,8 @@ def main():
         app = QtWidgets.QApplication(sys.argv)
     else:
         app = QtWidgets.QApplication.instance()
-             
-    
+
+
     main = MainApp()
     main.show()
     ####################
