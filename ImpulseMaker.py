@@ -75,10 +75,6 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
          layout.addWidget(toolbar)
          layout.addWidget(self.canvas)
 
-         timer = QtCore.QTimer()
-         timer.timeout.connect(lambda:self.tabWidget.setStatusTip("Current stage position: " + str(Motor.position())))
-         timer.start(100)  # every 100 milliseconds
-
     def update_plot(self):
         if self.tabWidget.currentIndex() == 1 and self.tableWidget.rowCount() > 1:
             xdata = []
@@ -156,6 +152,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
     def setupMotor(self):
         global Motor
+        global timer
         try:
 
              import thorlabs_apt as apt
@@ -163,6 +160,12 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
              Motor.set_move_home_parameters(2, 1, 7.0, 0.0001)
              self.logText("Motor initialized")
              self.LogField.append("")
+             
+             timer = QtCore.QTimer()
+             timer.timeout.connect(lambda:self.tabWidget.setStatusTip("Current stage position: " + str(Motor.position())))
+             timer.start(100)  # every 100 milliseconds
+        except NameError:
+            pass
         except:
             self.logWarningText("Motor not initialized :"+str(sys.exc_info()[1]))
             self.LogField.append("")
