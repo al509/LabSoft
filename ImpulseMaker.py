@@ -117,6 +117,16 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         self.StagesConrtolBox.setEnabled(blk)
         self.ParametersBox.setEnabled(blk)
         self.annealBox.setEnabled(blk)
+        
+    def startBlock(self, flag):
+        self.interfaceBlock(flag)
+        blk = not flag
+        self.ParametersBox.setEnabled(True)
+        self.fileButton.setEnabled(blk)
+        self.powerSpinBox.setEnabled(blk)
+        self.openSpinBox.setEnabled(blk)
+        self.periodSpinBox.setEnabled(blk)
+        self.saveButton.setEnabled(blk)
 
     def setupButtons(self):
         self.manualConnectionBox.stateChanged.connect(self.manualConnectionClicked)
@@ -451,13 +461,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
     def start(self):
         try:
-            self.interfaceBlock(True)
-            self.ParametersBox.setEnabled(True)
-            self.fileButton.setEnabled(False)
-            self.powerSpinBox.setEnabled(False)
-            self.openSpinBox.setEnabled(False)
-            self.periodSpinBox.setEnabled(False)
-            self.saveButton.setEnabled(False)
+            self.startBlock(True)
 
             power = self.powerSpinBox.value()
             Topen = self.openSpinBox.value()
@@ -477,13 +481,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             if self.isNotStarted.isSet():
                 Laser.setOff()
                 self.logWarningText("Interrupted")
-                self.interfaceBlock(False)
-                self.fileButton.setEnabled(True)
-                self.powerSpinBox.setEnabled(True)
-                self.openSpinBox.setEnabled(True)
-                self.periodSpinBox.setEnabled(True)
-                self.saveButton.setEnabled(True)
-                self.startButton.setEnabled(True)
+                self.startBlock(False)
                 return
             self.logText("Laser heated. Starting process")
 
@@ -492,13 +490,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                 if self.isNotStarted.isSet():
                     Laser.setOff()
                     self.logWarningText("Interrupted")
-                    self.interfaceBlock(False)
-                    self.fileButton.setEnabled(True)
-                    self.powerSpinBox.setEnabled(True)
-                    self.openSpinBox.setEnabled(True)
-                    self.periodSpinBox.setEnabled(True)
-                    self.saveButton.setEnabled(True)
-                    self.startButton.setEnabled(True)
+                    self.startBlock(False)
                     return
 
                 x_item = self.tableWidget.item(i, 0)
@@ -513,29 +505,17 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             Laser.setOff()
             self.logText("Completed")
             self.isNotStarted.set()
-            self.interfaceBlock(False)
+            self.startBlock(False)
         except AttributeError:
             self.logWarningText("Looks like there are empty values" +
                                "in coordinates list. Process stopped.")
             Laser.setOff()
-            self.interfaceBlock(False)
-            self.ParametersBox.setEnabled(True)
-            self.fileButton.setEnabled(True)
-            self.powerSpinBox.setEnabled(True)
-            self.openSpinBox.setEnabled(True)
-            self.periodSpinBox.setEnabled(True)
-            self.saveButton.setEnabled(True)
+            self.startBlock(False)
             self.isNotStarted.set()
         except:
             self.logWarningText("Process failed: "+ str(sys.exc_info()[1]))
             self.isNotStarted.set()
-            self.interfaceBlock(False)
-            self.ParametersBox.setEnabled(True)
-            self.fileButton.setEnabled(True)
-            self.powerSpinBox.setEnabled(True)
-            self.openSpinBox.setEnabled(True)
-            self.periodSpinBox.setEnabled(True)
-            self.saveButton.setEnabled(True)
+            self.startBlock(False)
             try:
                 Laser.setOff()
             except:
