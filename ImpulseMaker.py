@@ -52,6 +52,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
          global Laser
          global Shutter
          global Motor
+         global timer
 
          self.timeToHeat = 30 # sec
          self.motorDefaultSpeed = 5 ## mm/s
@@ -165,6 +166,8 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
              timer.timeout.connect(lambda:self.tabWidget.setStatusTip("Current stage position: " + str(Motor.position())))
              timer.start(100)  # every 100 milliseconds
         except NameError:
+            self.logWarningText("tick")
+            self.LogField.append("")
             pass
         except:
             self.logWarningText("Motor not initialized :"+str(sys.exc_info()[1]))
