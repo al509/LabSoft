@@ -153,25 +153,23 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
     def setupMotor(self):
         global Motor
-        global timer
         try:
-
+             global timer
              import thorlabs_apt as apt
              Motor = apt.Motor(90864301)
              Motor.set_move_home_parameters(2, 1, 7.0, 0.0001)
              self.logText("Motor initialized")
              self.LogField.append("")
-             
+
              timer = QtCore.QTimer()
-             timer.timeout.connect(lambda:self.tabWidget.setStatusTip("Current stage position: " + str(Motor.position())))
-             timer.start(100)  # every 100 milliseconds
-        except NameError:
-            self.logWarningText("tick")
-            self.LogField.append("")
-            pass
+             timer.timeout.connect(self.tick)
+             timer.start(1)  # every 100 milliseconds
         except:
             self.logWarningText("Motor not initialized :"+str(sys.exc_info()[1]))
             self.LogField.append("")
+
+    def tick(self):
+        print("tick")
 
     def manualConnectionClicked(self):
         if self.manualConnectionBox.isChecked() == True:
