@@ -778,7 +778,7 @@ def main():
     main = MainApp()
     main.show()
     ####################
-    sys.exit(app.exec())
+#    sys.exit(app.exec())
     ####################
     return main
 
