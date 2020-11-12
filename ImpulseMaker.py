@@ -83,12 +83,12 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
          layout.addWidget(self.canvas)
          
          #defining  ERV plot for correction
-         self.ERVcanvas = MplCanvas(self, dpi=75)        
+         self.ERVcanvas = MplCanvas(self, dpi=70)        
          ERVlayout = QtWidgets.QGridLayout(self.ERVView)
          ERVlayout.addWidget(self.ERVcanvas)
          
          #defining  correction plot for correction
-         self.corCanvas = MplCanvas(self, dpi=75)        
+         self.corCanvas = MplCanvas(self, dpi=70)        
          corLayout = QtWidgets.QGridLayout(self.correctionView)
          corLayout.addWidget(self.corCanvas)
 
@@ -150,7 +150,9 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         self.inputIMSButton.clicked.connect(self.corLoadIMS)
         self.zeroLevelBox.valueChanged.connect(self.corrRecalc)
         self.zeroLevelSlider.valueChanged.connect(lambda: self.zeroLevelBox.setValue(float(self.zeroLevelSlider.value())/1000 + self.sliderZero))
+        self.x0Slider.valueChanged.connect(lambda: self.x0Box.setValue(self.x0Slider.value()))
         self.calcCorrectionButton.clicked.connect(self.correct)
+        self.x0Box.valueChanged.connect(self.corrRecalc)
 
 
     def setupTable(self):
@@ -641,17 +643,21 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
     def corrRecalc(self):
         try:    
             ERVarray = np.loadtxt(self.inputERVEdit.text())[:,:2]    #   scan array
+            
+
+            
+            
             self.ERVcanvas.axes.cla()  # Clear the canvas.
             self.ERVcanvas.axes.plot(ERVarray[:,0],ERVarray[:,1], 'b')
-            self.ERVcanvas.axes.axhline(self.zeroLevelBox.value(),color='black')
+            self.ERVcanvas.axes.axhline(self.zeroLevelBox.value(),color='green', ls='--', lw=1)
+            self.ERVcanvas.axes.axvline(self.x0Box.value(),color='red',ls='--', lw = 1)
             self.ERVcanvas.draw()
             
             if self.inputIMSEdit.text() != "":
                 
                 IMSarray = self.loadShotsFromIms(self.inputIMSEdit.text())  # shots array
                 ERVmod = ERVarray[ERVarray[:,1] > self.zeroLevelBox.value()]    # only modified points
-                x_n = (ERVmod[:,0] * self.stepsInMm) + (IMSarray[0,0] - ERVmod[0,0]* self.stepsInMm)
-                x_n += (IMSarray[-1, 0] - x_n[-1])/2 # ERV X points in IMS coordinates
+                x_n = (ERVmod[:,0] * self.stepsInMm) + (IMSarray[0,0] - self.x0Box.value()* self.stepsInMm)
 
 
                 y = np.empty(len(IMSarray))
@@ -698,6 +704,19 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                 self.logText("File load aborted")
                 return
             self.inputERVEdit.setText(filepath)
+            
+            ERVarray = np.loadtxt(self.inputERVEdit.text())[:,:2]
+            ERVmod = ERVarray[ERVarray[:,1] > self.zeroLevelBox.value()]    # only modified points
+            
+            
+            self.x0Slider.setMinimum(ERVarray[0,0])
+            self.x0Box.setMinimum(ERVarray[0,0])
+            self.x0Slider.setMaximum(int(ERVarray[-1,0]))
+            self.x0Box.setMaximum(int(ERVarray[-1,0]))
+            
+            self.x0Slider.setValue(ERVmod[0,0] + 60/2.5)
+            
+            
             
             self.corrRecalc()
         except:

@@ -25,6 +25,12 @@
   <property name="windowTitle">
    <string>Impulse maker v0.8 (12.11.2020)</string>
   </property>
+  <property name="toolTip">
+   <string/>
+  </property>
+  <property name="statusTip">
+   <string/>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QGroupBox" name="ConnectionBox">
     <property name="geometry">
@@ -334,8 +340,11 @@
       <height>401</height>
      </rect>
     </property>
+    <property name="statusTip">
+     <string>Current stage position:</string>
+    </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>3</number>
     </property>
     <widget class="QWidget" name="tab">
      <attribute name="title">
@@ -695,19 +704,19 @@ p, li { white-space: pre-wrap; }
       <property name="geometry">
        <rect>
         <x>210</x>
-        <y>230</y>
+        <y>240</y>
         <width>321</width>
-        <height>141</height>
+        <height>131</height>
        </rect>
       </property>
      </widget>
      <widget class="QGraphicsView" name="ERVView">
       <property name="geometry">
        <rect>
-        <x>210</x>
+        <x>230</x>
         <y>10</y>
-        <width>321</width>
-        <height>221</height>
+        <width>301</width>
+        <height>191</height>
        </rect>
       </property>
      </widget>
@@ -717,10 +726,10 @@ p, li { white-space: pre-wrap; }
       </property>
       <property name="geometry">
        <rect>
-        <x>180</x>
+        <x>200</x>
         <y>10</y>
         <width>22</width>
-        <height>211</height>
+        <height>191</height>
        </rect>
       </property>
       <property name="autoFillBackground">
@@ -750,8 +759,8 @@ p, li { white-space: pre-wrap; }
        <rect>
         <x>10</x>
         <y>10</y>
-        <width>167</width>
-        <height>111</height>
+        <width>187</width>
+        <height>133</height>
        </rect>
       </property>
       <layout class="QFormLayout" name="correctionLayout">
@@ -801,7 +810,7 @@ p, li { white-space: pre-wrap; }
        <item row="2" column="0">
         <widget class="QLabel" name="ZeroLevelLabel">
          <property name="text">
-          <string>Zero level:</string>
+          <string>Zero level (λ₀):</string>
          </property>
         </widget>
        </item>
@@ -824,7 +833,7 @@ p, li { white-space: pre-wrap; }
          </property>
         </widget>
        </item>
-       <item row="3" column="0" colspan="2">
+       <item row="4" column="0" colspan="2">
         <widget class="QPushButton" name="calcCorrectionButton">
          <property name="text">
           <string>Generate array</string>
@@ -838,7 +847,34 @@ p, li { white-space: pre-wrap; }
          </property>
         </widget>
        </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="x0Label">
+         <property name="text">
+          <string>First variation (x₀):</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QSpinBox" name="x0Box">
+         <property name="singleStep">
+          <number>5</number>
+         </property>
+        </widget>
+       </item>
       </layout>
+     </widget>
+     <widget class="QSlider" name="x0Slider">
+      <property name="geometry">
+       <rect>
+        <x>210</x>
+        <y>210</y>
+        <width>321</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
      </widget>
     </widget>
    </widget>
@@ -883,6 +919,9 @@ p, li { white-space: pre-wrap; }
       </item>
       <item row="1" column="0" colspan="2">
        <widget class="QPushButton" name="StagesToHomeButton">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
          <string>Stages to home</string>
         </property>
