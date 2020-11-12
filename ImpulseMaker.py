@@ -673,7 +673,6 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                 self.corCanvas.axes.plot(IMSarray[:,0],y_new, '--g')
                 self.corCanvas.draw()
                 
-                self.logText("Coordinates written succesfully")
                 return (IMSarray[:,0],y_corr)
             
         except:
@@ -721,15 +720,18 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
              
         
     def correct(self):
-        corArray = self.corrRecalc()
-        num_lines = len(corArray[0])
-        self.tableWidget.setRowCount(num_lines)
-        for i in range(0, num_lines):
-            x_item = QTableWidgetItem(str(corArray[0][i]))
-            n_item = QTableWidgetItem(str(int(corArray[1][i])))
-            self.tableWidget.setItem(i, 0, x_item)
-            self.tableWidget.setItem(i, 1, n_item)
-
+        try:
+            corArray = self.corrRecalc()
+            num_lines = len(corArray[0])
+            self.tableWidget.setRowCount(num_lines)
+            for i in range(0, num_lines):
+                x_item = QTableWidgetItem(str(corArray[0][i]))
+                n_item = QTableWidgetItem(str(int(corArray[1][i])))
+                self.tableWidget.setItem(i, 0, x_item)
+                self.tableWidget.setItem(i, 1, n_item)
+            self.logText("Array generated successfully. See 'Main features' and 'N(x)' tabs for details")
+        except:
+            self.logWarningText(str(sys.exc_info()[1]))
     def logText(self, text):
         self.LogField.append(">" + text)
 
@@ -776,7 +778,7 @@ def main():
     main = MainApp()
     main.show()
     ####################
-#    sys.exit(app.exec())
+    sys.exit(app.exec())
     ####################
     return main
 

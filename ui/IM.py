@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 
-<<<<<<< Updated upstream
-# Form implementation generated from reading ui file 'C:\Users\Александр\Desktop\work\6. Impulse maker\ImpulseMaker\ui\MainWindow.ui'
-=======
 # Form implementation generated from reading ui file 'IM.ui'
->>>>>>> Stashed changes
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
