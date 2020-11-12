@@ -55,7 +55,13 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
          self.timeToHeat = 30 # sec
          self.motorDefaultSpeed = 5 ## mm/s
+         self.sliderZero  = 1549.9 # Сделать изменяемым параметром
+         self.stepsInMm = 2.5/1000
+         
          self.filedir = "saves"
+         self.ERVdir = "."
+         self.IMSdir = "."
+
 
          self.setupUi(self)
          self.setupBox()
@@ -68,12 +74,23 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
          self.threadpool.start(worker2)
 
 
+         #defining plot for function generator        
          self.canvas = MplCanvas(self, width=5, height=4, dpi=100)
          toolbar = NavigationToolbar(self.canvas, self)
 
          layout = QtWidgets.QGridLayout(self.tab_2)
          layout.addWidget(toolbar)
          layout.addWidget(self.canvas)
+         
+         #defining  ERV plot for correction
+         self.ERVcanvas = MplCanvas(self, dpi=75)        
+         ERVlayout = QtWidgets.QGridLayout(self.ERVView)
+         ERVlayout.addWidget(self.ERVcanvas)
+         
+         #defining  correction plot for correction
+         self.corCanvas = MplCanvas(self, dpi=75)        
+         corLayout = QtWidgets.QGridLayout(self.correctionView)
+         corLayout.addWidget(self.corCanvas)
 
     def update_plot(self):
         if self.tabWidget.currentIndex() == 1 and self.tableWidget.rowCount() > 1:
@@ -128,7 +145,12 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         self.tableWidget.cellActivated.connect(self.insertRow)
         self.tabWidget.currentChanged.connect(self.update_plot)
         self.generateArrayButton.clicked.connect(self.generateArray)
-
+        
+        self.inputERVButton.clicked.connect(self.corLoadERV)
+        self.inputIMSButton.clicked.connect(self.corLoadIMS)
+        self.zeroLevelBox.valueChanged.connect(self.corrRecalc)
+        self.zeroLevelSlider.valueChanged.connect(lambda: self.zeroLevelBox.setValue(float(self.zeroLevelSlider.value())/1000 + self.sliderZero))
+        self.calcCorrectionButton.clicked.connect(self.correct)
 
 
     def setupTable(self):
@@ -598,6 +620,115 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             self.logText("Array generated")
         except ValueError:
              self.logWarningText(str(sys.exc_info()[1]))
+             
+             
+    def loadShotsFromIms(self, filename):
+        f = open(filename, 'r')
+    
+        numLines = int(f.readline())
+        shotsArray = np.zeros((numLines, 2))
+        f.readline()
+        f.readline()
+        for i in range(0, numLines):
+            line = f.readline().split()
+            shotsArray[i,0]=float(line[0]) 
+            shotsArray[i,1]=int(line[1])
+        
+        f.close()
+    
+        return shotsArray
+    
+    def corrRecalc(self):
+        try:    
+            ERVarray = np.loadtxt(self.inputERVEdit.text())[:,:2]    #   scan array
+            self.ERVcanvas.axes.cla()  # Clear the canvas.
+            self.ERVcanvas.axes.plot(ERVarray[:,0],ERVarray[:,1], 'b')
+            self.ERVcanvas.axes.axhline(self.zeroLevelBox.value(),color='black')
+            self.ERVcanvas.draw()
+            
+            if self.inputIMSEdit.text() != "":
+                
+                IMSarray = self.loadShotsFromIms(self.inputIMSEdit.text())  # shots array
+                ERVmod = ERVarray[ERVarray[:,1] > self.zeroLevelBox.value()]    # only modified points
+                x_n = (ERVmod[:,0] * self.stepsInMm) + (IMSarray[0,0] - ERVmod[0,0]* self.stepsInMm)
+                x_n += (IMSarray[-1, 0] - x_n[-1])/2 # ERV X points in IMS coordinates
+
+
+                y = np.empty(len(IMSarray))
+
+                for i in range(len(IMSarray)):
+                    cor = np.argmin(abs(IMSarray[i,0] - x_n))
+                    y[i] = ERVmod[cor,1]    # ERV coordinates. corresponding to x points
+
+                y_n = (y - self.zeroLevelBox.value())/np.mean((y-self.zeroLevelBox.value())/IMSarray[:,1]) # ERV Y points in IMS coordinates
+                
+                y_new= IMSarray[:,1] + max(y_n - IMSarray[:,1])
+
+                y_corr = np.round(y_new-y_n)
+
+                            
+                self.corCanvas.axes.cla()  # Clear the canvas.
+                self.corCanvas.axes.plot(IMSarray[:,0],IMSarray[:,1], 'b')
+                self.corCanvas.axes.plot(IMSarray[:,0],y_n, 'g')
+                self.corCanvas.axes.plot(IMSarray[:,0],y_new, '--g')
+                self.corCanvas.draw()
+                
+                self.logText("Coordinates written succesfully")
+                return (IMSarray[:,0],y_corr)
+            
+        except:
+            self.logWarningText(str(sys.exc_info()[1]))
+        
+    def IMSredraw(self):        
+        shotsArray = self.loadShotsFromIms(self.inputIMSEdit.text())
+        
+        self.corCanvas.axes.cla()  # Clear the canvas.
+        self.corCanvas.axes.plot(shotsArray[:,0],shotsArray[:,1], 'b')
+        self.corCanvas.draw()
+        
+        if self.inputERVEdit.text() != "":
+            self.corrRecalc()
+        
+    def corLoadERV(self):
+        try:
+            filepath = QFileDialog.getOpenFileName(self, "Open File", self.ERVdir,
+                                        "ERV data file (*.txt)")[0]
+
+            self.ERVdir = str(Path(filepath).parent)
+            if filepath == "":
+                self.logText("File load aborted")
+                return
+            self.inputERVEdit.setText(filepath)
+            
+            self.corrRecalc()
+        except:
+             self.logWarningText(str(sys.exc_info()[1]))
+             
+    def corLoadIMS(self):
+        try:
+            filepath = QFileDialog.getOpenFileName(self, "Open File", self.IMSdir,
+                                        "IMS data file (*.ims)")[0]
+
+            self.IMSdir = str(Path(filepath).parent)
+            if filepath == "":
+                self.logText("File load aborted")
+                return
+            self.inputIMSEdit.setText(filepath)
+            
+            self.IMSredraw()
+        except:
+             self.logWarningText(str(sys.exc_info()[1]))
+             
+        
+    def correct(self):
+        corArray = self.corrRecalc()
+        num_lines = len(corArray[0])
+        self.tableWidget.setRowCount(num_lines)
+        for i in range(0, num_lines):
+            x_item = QTableWidgetItem(str(corArray[0][i]))
+            n_item = QTableWidgetItem(str(int(corArray[1][i])))
+            self.tableWidget.setItem(i, 0, x_item)
+            self.tableWidget.setItem(i, 1, n_item)
 
     def logText(self, text):
         self.LogField.append(">" + text)
