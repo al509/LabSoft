@@ -14,90 +14,87 @@ import winsound
 from ui import TM as ui
 import math
 import time
+from common.Common import Worker, CommonClass
+from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem
 
 
 
-class Worker(QtCore.QRunnable):
+class MainApp(CommonClass, ui.Ui_MainWindow):
+    def __init__(self):
+        CommonClass.__init__(self)
+        ui.Ui_MainWindow.__init__(self)
+        self.setupUi(self)
+        
+        self.isNotStarted = threading.Event()
+        self.isNotStarted.set()
+        self.isChecking = False
+
+        self.timeToHeatUpTube=10 # seconds, calculated by Daria
+
+        self.frequency = 1500  # Set Frequency To 2500 Hertz
+        self.duration = 1500  # Set Duration To 1000 ms == 1 second
+    
 
 
-    def __init__(self, fn, *args, **kwargs):
-        super(Worker, self).__init__()
-        # Store constructor arguments (re-used for processing)
-        self.fn = fn
-        self.args = args
-        self.kwargs = kwargs
+        self.v1 = 0.32
+        self.v2 = 0.24
+        self.a1 = 2.0
+        self.a2 = 1.5
+        self.s1 = 4 ## mm
+        self.s2 = 3 ## mm
+        self.t_stop = 0.12
+        self.stretchButtonClickedN = 0
 
-    def run(self):
+        self.LaserPowerListName="Laser Power Script.txt"
 
-        self.fn(*self.args, **self.kwargs)
-
-
-
-class Ui_MainWindow(object):
-
-    threadpool = QtCore.QThreadPool()
-
-    isNotStarted = threading.Event()
-    isNotStarted.set()
-    isChecking = False
-
-    timeToHeatUpTube=10 # seconds, calculated by Daria
-#    NumberOfCycles=15
-
-    frequency = 1500  # Set Frequency To 2500 Hertz
-    duration = 1500  # Set Duration To 1000 ms == 1 second
-
-
-
-    v1 = 0.32
-    v2 = 0.24
-    a1 = 2.0
-    a2 = 1.5
-    s1 = 4 ## mm
-    s2 = 3 ## mm
-    t_stop = 0.12
-    stretchButtonClickedN = 0
-
- #   LaserCOMPort='COM14'
-    LaserPowerListName="Laser Power Script.txt"
-
-
-    ui = ui.Ui_MainWindow()
-
-    def setupUi(self, MainWindow):
-
-        self.ui.setupUi(MainWindow)
+        self.setupButtons()
+        
+        self.threadpool.start(self.worker1)
+        self.threadpool.start(self.worker2)
+        
+    def setupButtons(self):
         ########## Button conections ##########
-        self.ui.ConnectionLaserButton.clicked.connect(self.laserButtonClicked)
-        self.ui.ConnectionStagesButton.clicked.connect(self.stagesButtonClicked)
-        self.ui.StagesToZerosButton.clicked.connect(self.stagesToZerosClicked)
-        self.ui.StagesToHomeButton.clicked.connect(self.stagesToHomeClicked)
-        self.ui.MoveStagesButton.clicked.connect(self.moveStagesClicked)
-        self.ui.StartStopButton.clicked.connect(self.startStopButtonClicked)
-        self.ui.StretchButton.clicked.connect(self.stretchButtonClicked)
-        self.ui.FileBox.clicked.connect(self.fileBoxClicked)
-        self.ui.SetToTenButton.clicked.connect(self.SetToTenClicked)
-        self.ui.MoveOutButton.clicked.connect(self.moveOutClicked)
+        # self.ConnectionLaserButton.clicked.connect(self.laserButtonClicked)
+        # self.ConnectionStagesButton.clicked.connect(self.stagesButtonClicked)
+        self.StagesToZerosButton.clicked.connect(self.stagesToZerosClicked)
+        self.StagesToHomeButton.clicked.connect(self.stagesToHomeClicked)
+        self.MoveStagesButton.clicked.connect(self.moveStagesClicked)
+        self.StartStopButton.clicked.connect(self.startStopButtonClicked)
+        self.StretchButton.clicked.connect(self.stretchButtonClicked)
+        self.FileBox.clicked.connect(self.fileBoxClicked)
+        self.SetToTenButton.clicked.connect(self.SetToTenClicked)
+        self.MoveOutButton.clicked.connect(self.moveOutClicked)
 
-        self.ui.MoveLeftStageLeftButton.clicked.connect(lambda :self.moveSingleStage(motor1,-float(self.ui.MoveLeftStageField.text())))
-        self.ui.MoveLeftStageRightButton.clicked.connect(lambda :self.moveSingleStage(motor1,float(self.ui.MoveLeftStageField.text())))
-        self.ui.MoveRightStageLeftButton.clicked.connect(lambda :self.moveSingleStage(motor2,float(self.ui.MoveRightStageField.text())))
-        self.ui.MoveRightStageRightButton.clicked.connect(lambda :self.moveSingleStage(motor2,-float(self.ui.MoveRightStageField.text())))
+        self.MoveLeftStageLeftButton.clicked.connect(lambda :self.moveSingleStage(motor1,-float(self.MoveLeftStageField.text())))
+        self.MoveLeftStageRightButton.clicked.connect(lambda :self.moveSingleStage(motor1,float(self.MoveLeftStageField.text())))
+        self.MoveRightStageLeftButton.clicked.connect(lambda :self.moveSingleStage(motor2,float(self.MoveRightStageField.text())))
+        self.MoveRightStageRightButton.clicked.connect(lambda :self.moveSingleStage(motor2,-float(self.MoveRightStageField.text())))
+        
+        self.manualConnectionBox.stateChanged.connect(self.manualConnectionClicked)
+        self.AutoDetectButton.clicked.connect(self.autoDetectClicked)
+        self.manualConnectButton.clicked.connect(self.manualConnectClicked)
         #######################################
 
 
+    def manualConnectionClicked(self):
+        if self.manualConnectionBox.isChecked() == True:
+            self.laserPortLineEdit.setVisible(True)
+            self.shutterPortLineEdit.setVisible(True)
+            self.manualConnectButton.setVisible(True)
+            self.AutoDetectButton.setEnabled(False)
+            self.ConnectionBox.setGeometry(QtCore.QRect(50, 10, 211, 161))
+        else:
+            self.laserPortLineEdit.setVisible(False)
+            self.shutterPortLineEdit.setVisible(False)
+            self.manualConnectButton.setVisible(False)
+            self.AutoDetectButton.setEnabled(True)
+            self.ConnectionBox.setGeometry(QtCore.QRect(50, 40, 211, 121))
 
-    def logWarningText(self, text):
-        self.ui.LogField.append("<span style=\" font-size:8pt; font-weight:600; color:#ff0000;\" >" + ">" + text + "</span>")
-        self.ui.LogField.append("")
-    def logText(self, text):
-        self.ui.LogField.append(">" + text)
-        self.ui.LogField.append("")
 
     def laserButtonClicked(self):
         global Laser
         try:
-            Laser=SynradLaser.Laser("COM" + self.ui.PortField.text())
+            Laser=SynradLaser.Laser("COM" + self.PortField.text())
             self.logText('The laser was connected')
             # номер COM  порта
         except:
@@ -148,8 +145,8 @@ class Ui_MainWindow(object):
         try:
             motor1.set_velocity_parameters(0, 3.5, 4.5)
             motor2.set_velocity_parameters(0, 3.5, 4.5)
-            motor1.move_by(-1*float(self.ui.MoveStagesField.text()), False)
-            motor2.move_by(float(self.ui.MoveStagesField.text()), False)
+            motor1.move_by(-1*float(self.MoveStagesField.text()), False)
+            motor2.move_by(float(self.MoveStagesField.text()), False)
             self.logText('Stages moved')
         except:
             self.logWarningText(str(sys.exc_info()[1]))
@@ -170,19 +167,19 @@ class Ui_MainWindow(object):
             self.isNotStarted.clear()
             Laser.SetPower(self.PowerArray[0])
             Laser.SetOn()
-            self.ui.NumberOfCycleField.setText("Heating up the tube")
+            self.NumberOfCycleField.setText("Heating up the tube")
             self.isNotStarted.wait(self.timeToHeatUpTube)
             if self.isNotStarted.isSet():
                 Laser.SetOff()
                 self.isNotStarted.set()
-                self.ui.NumberOfCycleField.setText("Interrupted")
+                self.NumberOfCycleField.setText("Interrupted")
                 self.logWarningText("Interrupted")
                 return
             i = 1
-            while(i <= int(self.ui.NumberOfCyclesField.text()) * 2):
+            while(i <= int(self.NumberOfCyclesField.text()) * 2):
                 Laser.SetPower(self.PowerArray[i-1])
-                self.ui.NumberOfCycleField.setText(str(math.floor(i/ 2 + 1)))
-#                if (i>int(self.ui.NumberOfCyclesField.text())*2 - 4): winsound.Beep(self.frequency, self.duration)
+                self.NumberOfCycleField.setText(str(math.floor(i/ 2 + 1)))
+#                if (i>int(self.NumberOfCyclesField.text())*2 - 4): winsound.Beep(self.frequency, self.duration)
                 motor1.set_velocity_parameters(0, self.a1, self.v1)
                 motor2.set_velocity_parameters(0, self.a2, self.v2)
                 motor1.move_by(-self.s1, False)
@@ -191,10 +188,10 @@ class Ui_MainWindow(object):
                 if self.isNotStarted.isSet():
                     Laser.SetOff()
                     self.isNotStarted.set()
-                    self.ui.NumberOfCycleField.setText("Interrupted")
+                    self.isNotStartedNumberOfCycleField.setText("Interrupted")
                     self.logWarningText("Interrupted")
                     return
-                self.ui.NumberOfCycleField.setText(str(math.floor(i/ 2 + 1)) + " half")
+                self.NumberOfCycleField.setText(str(math.floor(i/ 2 + 1)) + " half")
                 i+=1
                 Laser.SetPower(self.PowerArray[i-1])
                 motor1.set_velocity_parameters(0, self.a2, self.v2)
@@ -204,12 +201,12 @@ class Ui_MainWindow(object):
                 time.sleep(self.t_stop)
                 if self.isNotStarted.isSet():
                     Laser.SetOff()
-                    self.ui.NumberOfCycleField.setText("Interrupted")
+                    self.NumberOfCycleField.setText("Interrupted")
                     self.logWarningText("Interrupted")
                     return
                 i += 1
             Laser.SetOff()
-            self.ui.NumberOfCycleField.setText("Completed")
+            self.NumberOfCycleField.setText("Completed")
             self.logText("Completed")
             self.isNotStarted.set()
             winsound.Beep(self.frequency, 2*self.duration)
@@ -280,18 +277,19 @@ class Ui_MainWindow(object):
 
 
 def main():
-    if not QApplication.instance():
-        app = QApplication(sys.argv)
+    if not QtWidgets.QApplication.instance():
+        app = QtWidgets.QApplication(sys.argv)
     else:
-        app = QApplication.instance()
-    main = QtWidgets.QMainWindow()
-
-    ui = Ui_MainWindow()
-    ui.setupUi(main)
-
+        app = QtWidgets.QApplication.instance()
+             
+    
+    main = MainApp()
     main.show()
-    sys.exit(app.exec())
+    ####################
+ #   sys.exit(app.exec())
+    ####################
     return main
+
 
 if __name__ == '__main__':
 
