@@ -52,6 +52,8 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
         self.threadpool.start(self.worker1)
         self.threadpool.start(self.worker2)
         
+        
+        
     def setupButtons(self):
         ########## Button conections ##########
         # self.ConnectionLaserButton.clicked.connect(self.laserButtonClicked)
@@ -160,7 +162,13 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             self.logWarningText(str(sys.exc_info()[1]))
 
     def start(self):
+        global Shutter
         try:
+            Shutter.setMode(1)
+            if Shutter.getToggle() == "1":
+                Shutter.setToggle()
+            Laser.setOn()
+            
             self.stretchButtonClickedN = 0
             self.logText("Laser taper making started")
             self.PowerArray=np.array(np.loadtxt(self.LaserPowerListName)[:,1])
@@ -286,7 +294,7 @@ def main():
     main = MainApp()
     main.show()
     ####################
- #   sys.exit(app.exec())
+#    sys.exit(app.exec())
     ####################
     return main
 
