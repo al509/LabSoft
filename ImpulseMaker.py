@@ -131,7 +131,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
         self.inputERVButton.clicked.connect(self.corLoadERV)
         self.inputIMSButton.clicked.connect(self.corLoadIMS)
         self.zeroLevelBox.valueChanged.connect(self.corrRecalc)
-        self.zeroLevelSlider.valueChanged.connect(lambda: self.zeroLevelBox.setValue(float(self.zeroLevelSlider.value())/1000 + self.sliderZero))
+        self.zeroLevelSlider.valueChanged.connect(lambda: self.zeroLevelBox.setValue(float(self.zeroLevelBox.minimum() + self.zeroLevelSlider.value()*(self.zeroLevelBox.maximum()-self.zeroLevelBox.minimum())/200)))
         self.x0Slider.valueChanged.connect(lambda: self.x0Box.setValue(self.x0Slider.value()))
         self.calcCorrectionButton.clicked.connect(self.correct)
         self.x0Box.valueChanged.connect(self.corrRecalc)
@@ -544,6 +544,13 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             self.x0Box.setMaximum(int(ERVarray[-1,0]))
             
             self.x0Slider.setValue(ERVmod[0,0] + 60/2.5)
+            
+            
+           
+            
+           
+            self.zeroLevelBox.setMinimum(np.nanmin(ERVarray[:,1]))                                 
+            self.zeroLevelBox.setMaximum(np.nanmax(ERVarray[:,1]))
             
             
             
