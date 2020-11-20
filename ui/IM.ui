@@ -50,7 +50,7 @@
        <x>10</x>
        <y>19</y>
        <width>191</width>
-       <height>131</height>
+       <height>149</height>
       </rect>
      </property>
      <layout class="QVBoxLayout" name="ConnectionLayout">
@@ -162,8 +162,8 @@
       <rect>
        <x>10</x>
        <y>10</y>
-       <width>191</width>
-       <height>139</height>
+       <width>210</width>
+       <height>156</height>
       </rect>
      </property>
      <layout class="QFormLayout" name="ParametersLayout">
@@ -433,8 +433,8 @@
         <rect>
          <x>10</x>
          <y>19</y>
-         <width>191</width>
-         <height>83</height>
+         <width>197</width>
+         <height>94</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="annealLayout">
@@ -591,8 +591,8 @@ p, li { white-space: pre-wrap; }
        <rect>
         <x>10</x>
         <y>10</y>
-        <width>159</width>
-        <height>80</height>
+        <width>186</width>
+        <height>88</height>
        </rect>
       </property>
       <layout class="QFormLayout" name="generatorParamsLayout">
@@ -759,8 +759,8 @@ p, li { white-space: pre-wrap; }
        <rect>
         <x>10</x>
         <y>10</y>
-        <width>187</width>
-        <height>133</height>
+        <width>239</width>
+        <height>150</height>
        </rect>
       </property>
       <layout class="QFormLayout" name="correctionLayout">
@@ -823,7 +823,11 @@ p, li { white-space: pre-wrap; }
           <double>1540.900000000000091</double>
          </property>
          <property name="maximum">
+<<<<<<< Updated upstream
           <double>1555.099999999999909</double>
+=======
+          <double>1555.000000000000000</double>
+>>>>>>> Stashed changes
          </property>
          <property name="singleStep">
           <double>0.001000000000000</double>
@@ -896,7 +900,7 @@ p, li { white-space: pre-wrap; }
        <x>10</x>
        <y>20</y>
        <width>191</width>
-       <height>83</height>
+       <height>100</height>
       </rect>
      </property>
      <layout class="QGridLayout" name="StagesLayout">
@@ -937,7 +941,7 @@ p, li { white-space: pre-wrap; }
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
   </widget>
