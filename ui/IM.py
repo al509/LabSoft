@@ -67,7 +67,7 @@ class Ui_MainWindow(object):
         self.ParametersBox.setGeometry(QtCore.QRect(10, 300, 211, 141))
         self.ParametersBox.setObjectName("ParametersBox")
         self.layoutWidget = QtWidgets.QWidget(self.ParametersBox)
-        self.layoutWidget.setGeometry(QtCore.QRect(10, 10, 191, 139))
+        self.layoutWidget.setGeometry(QtCore.QRect(10, 10, 191, 131))
         self.layoutWidget.setObjectName("layoutWidget")
         self.ParametersLayout = QtWidgets.QFormLayout(self.layoutWidget)
         self.ParametersLayout.setContentsMargins(0, 0, 0, 0)
@@ -396,7 +396,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(3)
+        self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         MainWindow.setTabOrder(self.AutoDetectButton, self.manualConnectionBox)
         MainWindow.setTabOrder(self.manualConnectionBox, self.shutterPortLineEdit)
