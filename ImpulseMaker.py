@@ -43,7 +43,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
          global Shutter
          global Motor
 
-         self.sliderZero  = 1549.9 # Сделать изменяемым параметром
+         self.sliderZero  = 1548.195 # Сделать изменяемым параметром
          self.stepsInMm = 2.5/1000
          
          self.filedir = "saves"
@@ -131,7 +131,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
         self.inputERVButton.clicked.connect(self.corLoadERV)
         self.inputIMSButton.clicked.connect(self.corLoadIMS)
         self.zeroLevelBox.valueChanged.connect(self.corrRecalc)
-        self.zeroLevelSlider.valueChanged.connect(lambda: self.zeroLevelBox.setValue(float(self.zeroLevelBox.minimum() + self.zeroLevelSlider.value()*(self.zeroLevelBox.maximum()-self.zeroLevelBox.minimum())/200)))
+        self.zeroLevelSlider.valueChanged.connect(lambda: self.zeroLevelBox.setValue(float(self.zeroLevelBox.minimum() + self.zeroLevelSlider.value()*(self.zeroLevelBox.maximum()-self.zeroLevelBox.minimum())/100)))
         self.x0Slider.valueChanged.connect(lambda: self.x0Box.setValue(self.x0Slider.value()))
         self.calcCorrectionButton.clicked.connect(self.correct)
         self.x0Box.valueChanged.connect(self.corrRecalc)
@@ -552,6 +552,8 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             self.zeroLevelBox.setMinimum(np.nanmin(ERVarray[:,1]))                                 
             self.zeroLevelBox.setMaximum(np.nanmax(ERVarray[:,1]))
             
+            self.zeroLevelBox.setValue((np.nanmax(ERVarray[:,1])+np.nanmin(ERVarray[:,1]))/2)
+ #           self.zeroLevelBox.setValue((np.nanmax(ERVarray[:,1])))
             
             
             self.corrRecalc()
@@ -626,7 +628,7 @@ def main():
     main = MainApp()
     main.show()
     ####################
-#    sys.exit(app.exec())
+    sys.exit(app.exec())
     ####################
     return main
 

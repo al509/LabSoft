@@ -344,7 +344,7 @@
      <string>Current stage position:</string>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>3</number>
     </property>
     <widget class="QWidget" name="tab">
      <attribute name="title">
@@ -820,10 +820,10 @@ p, li { white-space: pre-wrap; }
           <number>3</number>
          </property>
          <property name="minimum">
-          <double>1549.900000000000091</double>
+          <double>1540.900000000000091</double>
          </property>
          <property name="maximum">
-          <double>1550.099999999999909</double>
+          <double>1555.099999999999909</double>
          </property>
          <property name="singleStep">
           <double>0.001000000000000</double>
