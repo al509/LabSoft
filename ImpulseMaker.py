@@ -17,9 +17,6 @@ from matplotlib.figure import Figure
 
 from common.Common import Worker, CommonClass
 
-
-
-
 class MplCanvas(FigureCanvasQTAgg):
 
     def __init__(self, parent=None, width=5, height=4, dpi=100):
@@ -543,11 +540,9 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             self.x0Slider.setMaximum(int(ERVarray[-1,0]))
             self.x0Box.setMaximum(int(ERVarray[-1,0]))
             
-            self.x0Slider.setValue(ERVmod[0,0] + 60/2.5)
+            self.x0Slider.setValue(ERVarray[0,0] + 60/2.5)
             
-            
-           
-            
+    
            
             self.zeroLevelBox.setMinimum(np.nanmin(ERVarray[:,1]))                                 
             self.zeroLevelBox.setMaximum(np.nanmax(ERVarray[:,1]))
@@ -628,7 +623,7 @@ def main():
     main = MainApp()
     main.show()
     ####################
-    sys.exit(app.exec())
+#    sys.exit(app.exec())
     ####################
     return main
 
