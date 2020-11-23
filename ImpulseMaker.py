@@ -36,10 +36,6 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
          self.isNotStarted = threading.Event()
          self.isNotStarted.set()
 
-         global Laser
-         global Shutter
-         global Motor
-
          self.sliderZero  = 1548.195 # Сделать изменяемым параметром
          self.stepsInMm = 2.5/1000
          
@@ -47,8 +43,9 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
          self.ERVdir = "."
          self.IMSdir = "."
 
-         self.setupBox()
+ 
          self.setupButtons()
+         self.setupBox()
          self.setupTable()
 
 
@@ -94,12 +91,6 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             self.canvas.draw()
 
 # Закончил тут
-
-
-    def setupBox(self):
-        self.laserPortLineEdit.setVisible(False)
-        self.shutterPortLineEdit.setVisible(False)
-        self.manualConnectButton.setVisible(False)
 
     def interfaceBlock(self, flag):
         blk = not flag
@@ -266,27 +257,27 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             self.startButton.setEnabled(True)
             start_pos = 53
             end_pos = 75
-            Laser. setPower(self.annealPowerBox.value())
-            Shutter.setMode(1)
-            if Shutter.getToggle() == "1":
-                Shutter.setToggle()
+            self.Laser.setPower(self.annealPowerBox.value())
+            self.Shutter.setMode(1)
+            if self.Shutter.getToggle() == "1":
+                self.Shutter.setToggle()
 
             self.logText("Moving to start position")
-            Motor.set_velocity_parameters(0, 10, self.motorDefaultSpeed)
-            Motor.move_to(start_pos, True)
-            Motor.set_velocity_parameters(0, 10, self.annealSpeedBox.value())
+            self.Motor.set_velocity_parameters(0, 10, self.motorDefaultSpeed)
+            self.Motor.move_to(start_pos, True)
+            self.Motor.set_velocity_parameters(0, 10, self.annealSpeedBox.value())
 
-            Laser.setOn()
+            self.Laser.setOn()
             self.logText("Starting to burn")
-            Shutter.setToggle()
-            Motor.move_to(end_pos, True)
-            Shutter.setToggle()
-            Laser.setOff()
+            self.Shutter.setToggle()
+            self.Motor.move_to(end_pos, True)
+            self.Shutter.setToggle()
+            self.Laser.setOff()
             self.logText("Anneal finished")
             self.interfaceBlock(False)
         except:
             try:
-                Laser.setOff()
+                self.Laser.setOff()
             except:
                 pass
             self.logWarningText("Process failed: "+ str(sys.exc_info()[1]))
@@ -308,17 +299,17 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             Tperiod = self.periodSpinBox.value()
             self.isNotStarted.clear()
 
-            Laser.setPower(power)
+            self.Laser.setPower(power)
 
-            Shutter.setMode(1)
-            if Shutter.getToggle() == "1":
-                Shutter.setToggle()
-            Laser.setOn()
+            self.Shutter.setMode(1)
+            if self.Shutter.getToggle() == "1":
+                self.Shutter.setToggle()
+            self.Laser.setOn()
             self.logText("Heating laser")
 
             self.isNotStarted.wait(self.timeToHeat)
             if self.isNotStarted.isSet():
-                Laser.setOff()
+                self.Laser.setOff()
                 self.logWarningText("Interrupted")
                 self.interfaceBlock(False)
                 self.fileButton.setEnabled(True)
@@ -333,7 +324,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             for i in range(0, self.tableWidget.rowCount()):
 
                 if self.isNotStarted.isSet():
-                    Laser.setOff()
+                    self.Laser.setOff()
                     self.logWarningText("Interrupted")
                     self.interfaceBlock(False)
                     self.fileButton.setEnabled(True)
@@ -350,17 +341,17 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
                 n = (int(n_item.text()))
                 self.logText("Processing coordinate "
                              + str(x) + " with " + str(n) + " times")
-                Motor.move_to(x, True)
+                self.Motor.move_to(x, True)
                 self.shutUp(n, Topen, Tperiod - Topen)
 
-            Laser.setOff()
+            self.Laser.setOff()
             self.logText("Completed")
             self.isNotStarted.set()
             self.interfaceBlock(False)
         except AttributeError:
             self.logWarningText("Looks like there are empty values" +
                                "in coordinates list. Process stopped.")
-            Laser.setOff()
+            self.Laser.setOff()
             self.interfaceBlock(False)
             self.isNotStarted.set()
         except:
@@ -368,7 +359,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             self.isNotStarted.set()
             self.interfaceBlock(False)
             try:
-                Laser.setOff()
+                self.Laser.setOff()
             except:
                 pass
 
@@ -587,23 +578,23 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
 
     def toggleShutter(self):
         try:
-            Shutter.setMode(1)
-            Shutter.setToggle()
+            self.Shutter.setMode(1)
+            self.Shutter.setToggle()
         except:
             self.logWarningText(str(sys.exc_info()[1]))
 
     def shutUp(self, N, Topen, Tclose):
-        Shutter.setMode(4)
-        Shutter.setRepeat(N)
-        Shutter.setOpenTime(Topen)
-        Shutter.setCloseTime(Tclose)
-        Shutter.setToggle()
+        self.Shutter.setMode(4)
+        self.Shutter.setRepeat(N)
+        self.Shutter.setOpenTime(Topen)
+        self.Shutter.setCloseTime(Tclose)
+        self.Shutter.setToggle()
         time.sleep(N * (Topen + Tclose)/1000)
 
     def __del__(self):
         try:
-            Laser.close()
-            Shutter.sc._file.close()
+            self.Laser.close()
+            self.Shutter.sc._file.close()
             apt._cleanup()
             print ("Cleared")
         except NameError:

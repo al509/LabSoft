@@ -31,18 +31,24 @@ class CommonClass(QMainWindow):
         
         self.worker1 = Worker(self.setupMotor)
         self.worker2 = Worker(self.autoDetectClicked)
+ 
+    
+ 
     def runThread(self, func):
         worker = Worker(func)
         self.threadpool.start(worker)
         
-    
+    def setupBox(self):
+        self.laserPortLineEdit.setVisible(False)
+        self.shutterPortLineEdit.setVisible(False)
+        self.manualConnectButton.setVisible(False)
+
     def setupMotor(self):
-        global Motor
         try:
 
              import thorlabs_apt as apt
-             Motor = apt.Motor(90864301)
-             Motor.set_move_home_parameters(2, 1, 7.0, 0.0001)
+             self.Motor = apt.Motor(90864301)
+             self.Motor.set_move_home_parameters(2, 1, 7.0, 0.0001)
              self.logText("Motor initialized")
              self.LogField.append("")
         except:
@@ -54,11 +60,12 @@ class CommonClass(QMainWindow):
     def stagesToZerosClicked(self):
         try:
             self.interfaceBlock(True)
-            Motor.set_velocity_parameters(0, 3.5, 4.5)
+            self.Motor.set_velocity_parameters(0, 3.5, 4.5)
 
-            Motor.move_home(True)
+            self.Motor.move_home(True)
             self.logText('Stages moved to zeros')
             self.interfaceBlock(False)
+            self.StagesToHomeButton.setEnabled(True)
         except:
             self.logWarningText(str(sys.exc_info()[1]))
             self.interfaceBlock(False)
@@ -68,11 +75,11 @@ class CommonClass(QMainWindow):
             self.interfaceBlock(True)
 #            Motor.backlash_distance(0)
 
-            Motor.set_velocity_parameters(0, 3.5, 4.5)
+            self.Motor.set_velocity_parameters(0, 3.5, 4.5)
 
             Home_value2 = 53
 
-            Motor.move_to(Home_value2, True)
+            self.Motor.move_to(Home_value2, True)
             self.logText('Stages moved to start position')
             self.interfaceBlock(False)
         except:
@@ -82,8 +89,8 @@ class CommonClass(QMainWindow):
     def moveStagesClicked(self):
         try:
             self.interfaceBlock(True)
-            Motor.set_velocity_parameters(0, 3.5, 4.5)
-            Motor.move_by(float(self.MoveStagesField.text()), False)
+            self.Motor.set_velocity_parameters(0, 3.5, 4.5)
+            self.Motor.move_by(float(self.MoveStagesField.text()), False)
             self.logText('Stages moved')
             self.interfaceBlock(False)
         except:
@@ -99,17 +106,14 @@ class CommonClass(QMainWindow):
 
         ports = list(serial.tools.list_ports.comports())
 
-        global Shutter
-        global Laser
-
 
         for p in ports:
 
             if not (isLaserConnected):
                 try:
-                    Laser = SynradLaser.Laser(p.device)
+                    self.Laser = SynradLaser.Laser(p.device)
 
-                    Laser.getStatus()
+                    self.Laser.getStatus()
 
                     isLaserConnected = True
                     self.laserPortLabel.setText("Laser port:    " + p.device)
@@ -121,13 +125,13 @@ class CommonClass(QMainWindow):
                 except:
                     if DEBUG:
                         self.logWarningText("Laser was not connected on "+p.device+": "+str(sys.exc_info()[1]))
-                    Laser.close()
+                    self.Laser.close()
                     pass
 
             if not (isShutterConnected):
                 try:
-                    Shutter = SC10Shutter.Shutter(p.device)
-                    Shutter.getID()
+                    self.Shutter = SC10Shutter.Shutter(p.device)
+                    self.Shutter.getID()
                     isShutterConnected = True
                     self.shutterPortLabel.setText("Shutter port: "+p.device)
                     self.logText("Shutter connected")
@@ -138,7 +142,7 @@ class CommonClass(QMainWindow):
                 except:
                     if DEBUG:
                         self.logWarningText("Shutter was not connected on "+p.device+": "+str(sys.exc_info()[1]))
-                    Shutter.sc._file.close()
+                    self.Shutter.sc._file.close()
                     pass
 
         if not (isShutterConnected):
@@ -153,12 +157,9 @@ class CommonClass(QMainWindow):
 
 
     def manualConnectClicked(self):
-        global Laser
-        global Shutter
-
         try:
-            Laser.close()
-            Shutter.sc._file.close()
+            self.Laser.close()
+            self.Shutter.sc._file.close()
         except:
             if DEBUG:
                 self.logWarningText("Laser disconnect: " + str(sys.exc_info()[1]))
@@ -166,8 +167,8 @@ class CommonClass(QMainWindow):
 
         self.logText("Manual connection started")
         try:
-            Laser = SynradLaser.Laser("COM"+self.laserPortLineEdit.text())
-            Laser.getStatus()
+            self.Laser = SynradLaser.Laser("COM"+self.laserPortLineEdit.text())
+            self.Laser.getStatus()
             self.logText("Laser connected")
             self.shutterPortLabel.setText("Laser port:    COM" + self.laserPortLineEdit.text())
 
@@ -177,11 +178,11 @@ class CommonClass(QMainWindow):
         except:
             self.logWarningText("Laser connection failed: "+ str(sys.exc_info()[1]))
             self.laserPortLabel.setText("Laser port:    COM")
-            Laser.close()
+            self.Laser.close()
 
         try:
-            Shutter = SC10Shutter.Shutter("COM" + self.shutterPortLineEdit.text())
-            Shutter.getID()
+            self.Shutter = SC10Shutter.Shutter("COM" + self.shutterPortLineEdit.text())
+            self.Shutter.getID()
             self.logText("Shutter connected")
             self.shutterPortLabel.setText("Shutter port: COM" + self.shutterPortLineEdit.text())
         except SerialException:
@@ -190,7 +191,7 @@ class CommonClass(QMainWindow):
         except:
             self.logWarningText("Shuter connection failed: "+ str(sys.exc_info()[1]))
             self.shutterPortLabel.setText("Shutter port: COM")
-            Shutter.sc._file.close()
+            self.Shutter.sc._file.close()
 
         self.LogField.append("")
 
