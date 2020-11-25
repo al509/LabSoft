@@ -4,8 +4,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication
 
-from libs import thorlabs_apt as apt
-apt.list_available_devices()
+
 from libs import SynradLaser
 import sys
 import numpy as np
@@ -48,7 +47,9 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
         self.LaserPowerListName="Laser Power Script.txt"
 
         self.setupButtons()
+        self.setupBox()
         
+        self.worker1 = Worker(self.stagesButtonClicked)
         self.threadpool.start(self.worker1)
         self.threadpool.start(self.worker2)
         
@@ -94,7 +95,6 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
 
 
     def laserButtonClicked(self):
-        global Laser
         try:
             Laser=SynradLaser.Laser("COM" + self.PortField.text())
             self.logText('The laser was connected')
@@ -105,6 +105,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
     def stagesButtonClicked(self):
         global motor1
         global motor2
+        from libs import thorlabs_apt as apt
         try:
             motor1 = apt.Motor(90864300)
             motor2 = apt.Motor(90864301)
@@ -162,30 +163,30 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             self.logWarningText(str(sys.exc_info()[1]))
 
     def start(self):
-        global Shutter
         try:
             Shutter.setMode(1)
             if Shutter.getToggle() == "0":
                 Shutter.setToggle()
             Laser.setOn()
+
             
             self.stretchButtonClickedN = 0
             self.logText("Laser taper making started")
             self.PowerArray=np.array(np.loadtxt(self.LaserPowerListName)[:,1])
             self.isNotStarted.clear()
-            Laser.SetPower(self.PowerArray[0])
-            Laser.SetOn()
+            self.Laser.setPower(self.PowerArray[0])
+            self.Laser.setOn()
             self.NumberOfCycleField.setText("Heating up the tube")
             self.isNotStarted.wait(self.timeToHeatUpTube)
             if self.isNotStarted.isSet():
-                Laser.SetOff()
+                self.Laser.setOff()
                 self.isNotStarted.set()
                 self.NumberOfCycleField.setText("Interrupted")
                 self.logWarningText("Interrupted")
                 return
             i = 1
             while(i <= int(self.NumberOfCyclesField.text()) * 2):
-                Laser.SetPower(self.PowerArray[i-1])
+                self.Laser.setPower(self.PowerArray[i-1])
                 self.NumberOfCycleField.setText(str(math.floor(i/ 2 + 1)))
 #                if (i>int(self.NumberOfCyclesField.text())*2 - 4): winsound.Beep(self.frequency, self.duration)
                 motor1.set_velocity_parameters(0, self.a1, self.v1)
@@ -194,26 +195,26 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
                 motor2.move_by(self.s2, True)
                 time.sleep(self.t_stop)
                 if self.isNotStarted.isSet():
-                    Laser.SetOff()
+                    self.Laser.setOff()
                     self.isNotStarted.set()
                     self.isNotStartedNumberOfCycleField.setText("Interrupted")
                     self.logWarningText("Interrupted")
                     return
                 self.NumberOfCycleField.setText(str(math.floor(i/ 2 + 1)) + " half")
                 i+=1
-                Laser.SetPower(self.PowerArray[i-1])
+                self.Laser.setPower(self.PowerArray[i-1])
                 motor1.set_velocity_parameters(0, self.a2, self.v2)
                 motor2.set_velocity_parameters(0, self.a1, self.v1)
                 motor1.move_by(self.s2, False)
                 motor2.move_by(-self.s1, True)
                 time.sleep(self.t_stop)
                 if self.isNotStarted.isSet():
-                    Laser.SetOff()
+                    self.Laser.setOff()
                     self.NumberOfCycleField.setText("Interrupted")
                     self.logWarningText("Interrupted")
                     return
                 i += 1
-            Laser.SetOff()
+            self.Laser.setOff()
             self.NumberOfCycleField.setText("Completed")
             self.logText("Completed")
             self.isNotStarted.set()
@@ -221,7 +222,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
 
         except:
             self.logWarningText(str(sys.exc_info()[1]))
-            Laser.SetOff()
+            self.Laser.setOff()
             return
 
     def startStopButtonClicked(self):
@@ -255,19 +256,19 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
 
     def LaserForTestClicked(self):
         try:
-            Laser.SetPower(10)
+            self.Laser.setPower(10)
         except:
             self.logWarningText(str(sys.exc_info()[1]))
 
     def SetToTenClicked(self):
         try:
             if self.isChecking == True:
-                Laser.SetOff()
+                self.Laser.setOff()
                 self.logText("Laser turned off")
                 self.isChecking = False
-                Laser.SetPower(10)
+                self.Laser.setPower(10)
             else:
-                Laser.SetOn()
+                self.Laser.setOn()
                 self.logText("Laser set to 10%")
                 self.isChecking = True
         except:
