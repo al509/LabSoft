@@ -1,59 +1,50 @@
 DEBUG = False
-import os
+import os, sys, time, threading, importlib
 from pathlib import Path
 from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem
+from PyQt5.QtWidgets import QTableWidgetItem
 from PyQt5.QtWidgets import QFileDialog
-
-import sys
 from ui import IM as ui
-
-import time
-import threading
 import numpy as np
-import importlib
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
-
 from common.Common import Worker, CommonClass
 
 class MplCanvas(FigureCanvasQTAgg):
-
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = fig.add_subplot(111)
         super(MplCanvas, self).__init__(fig)
 
 
-
 class MainApp(CommonClass, ui.Ui_MainWindow):
 
     def __init__(self):
-         CommonClass.__init__(self)
-         ui.Ui_MainWindow.__init__(self)
-         self.setupUi(self)
-         
-         self.isNotStarted = threading.Event()
-         self.isNotStarted.set()
-
-         self.sliderZero  = 1548.195 # Сделать изменяемым параметром
-         self.stepsInMm = 2.5/1000
-         
+         ''''Class initialization'''
+        
+         # Define constants
+         self.sliderZero  = 1548.195
+         self.stepsInMm = 2.5/1000   
          self.filedir = "saves"
          self.ERVdir = "."
          self.IMSdir = "."
-
- 
+        
+         # Run initialization
+         CommonClass.__init__(self)
+         ui.Ui_MainWindow.__init__(self)
+         self.setupUi(self) 
+         self.isNotStarted = threading.Event()
+         self.isNotStarted.set()        
          self.setupButtons()
          self.setupBox()
          self.setupTable()
 
 
-
+         # Start to detect equipment
          self.threadpool.start(self.worker1)
          self.threadpool.start(self.worker2)
 
-         #defining plot for function generator        
+         #define plot for function generator        
          self.canvas = MplCanvas(self, width=5, height=4, dpi=100)
          toolbar = NavigationToolbar(self.canvas, self)
 
@@ -61,17 +52,26 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
          layout.addWidget(toolbar)
          layout.addWidget(self.canvas)
          
-         #defining  ERV plot for correction
+         #definie  ERV plot for correction
          self.ERVcanvas = MplCanvas(self, dpi=70)        
          ERVlayout = QtWidgets.QGridLayout(self.ERVView)
          ERVlayout.addWidget(self.ERVcanvas)
          
-         #defining  correction plot for correction
+         #define  correction plot for correction
          self.corCanvas = MplCanvas(self, dpi=70)        
          corLayout = QtWidgets.QGridLayout(self.correctionView)
          corLayout.addWidget(self.corCanvas)
 
     def update_plot(self):
+        '''
+        Draw/redraw the function plot in the "N(x)" tab from table located in
+        the "Main functions" tab.
+
+        Returns
+        -------
+        None.
+
+        '''
         if self.tabWidget.currentIndex() == 1 and self.tableWidget.rowCount() > 1:
             xdata = []
             ydata = []
@@ -90,9 +90,8 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             # Trigger the canvas to update and redraw.
             self.canvas.draw()
 
-# Закончил тут
-
     def interfaceBlock(self, flag):
+        '''Block the interface while the shooting proccess running'''
         blk = not flag
         self.ConnectionBox.setEnabled(blk)
         self.StagesConrtolBox.setEnabled(blk)
@@ -100,6 +99,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
         self.annealBox.setEnabled(blk)
 
     def setupButtons(self):
+        '''Connect all buttons to their functions'''
         self.manualConnectionBox.stateChanged.connect(self.manualConnectionClicked)
         self.AutoDetectButton.clicked.connect(self.autoDetectClicked)
         self.manualConnectButton.clicked.connect(self.manualConnectClicked)
@@ -114,8 +114,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
         self.tableWidget.cellChanged.connect(self.cellChangeHandler)
         self.tableWidget.cellActivated.connect(self.insertRow)
         self.tabWidget.currentChanged.connect(self.update_plot)
-        self.generateArrayButton.clicked.connect(self.generateArray)
-        
+        self.generateArrayButton.clicked.connect(self.generateArray)   
         self.inputERVButton.clicked.connect(self.corLoadERV)
         self.inputIMSButton.clicked.connect(self.corLoadIMS)
         self.zeroLevelBox.valueChanged.connect(self.corrRecalc)
@@ -126,12 +125,14 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
 
 
     def setupTable(self):
+        '''Setup the table in the "Main features" tab'''
         self.tableWidget.setColumnCount(2)
         self.tableWidget.setRowCount(1)
         self.tableWidget.setHorizontalHeaderLabels(["Coordinate", "Number of shots"])
 
 
     def manualConnectionClicked(self):
+        '''Change the "Conection" box when the "Manual connection" (un)checked'''
         if self.manualConnectionBox.isChecked() == True:
             self.laserPortLineEdit.setVisible(True)
             self.shutterPortLineEdit.setVisible(True)
@@ -145,9 +146,8 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             self.AutoDetectButton.setEnabled(True)
             self.ConnectionBox.setGeometry(QtCore.QRect(10, 20, 211, 121))
 
-
-
     def fileClicked(self):
+        '''Load all parameters from the file''' 
         try:
 
             filepath = QFileDialog.getOpenFileName(self, "Open File", self.filedir,
@@ -200,6 +200,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
                                  + str(sys.exc_info()[1]))
 
     def saveConfig(self):
+        '''Save all parameters to the file'''
         try:
             filepath = QFileDialog.getSaveFileName(self, "Open File", self.filedir,
                                         "Impulse Maker savefile (*.ims)")[0]
@@ -240,7 +241,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
 
             f.close()
             self.fileEdit.setText(filename)
-            self.logText("Successfully saved configuration file " + filename)
+            self.logText("Successfully saved the configuration file " + filename)
         except AttributeError:
             self.logWarningText("File saving failed: incorrect number of rows."
                                + " Make sure that all rows filled")
@@ -262,7 +263,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             if self.Shutter.getToggle() == "1":
                 self.Shutter.setToggle()
 
-            self.logText("Moving to start position")
+            self.logText("Moving to the start position")
             self.Motor.set_velocity_parameters(0, 10, self.motorDefaultSpeed)
             self.Motor.move_to(start_pos, True)
             self.Motor.set_velocity_parameters(0, 10, self.annealSpeedBox.value())
@@ -523,8 +524,6 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             self.inputERVEdit.setText(filepath)
             
             ERVarray = np.loadtxt(self.inputERVEdit.text())[:,:2]
-            ERVmod = ERVarray[ERVarray[:,1] > self.zeroLevelBox.value()]    # only modified points
-            
             
             self.x0Slider.setMinimum(ERVarray[0,0])
             self.x0Box.setMinimum(ERVarray[0,0])
@@ -539,7 +538,6 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             self.zeroLevelBox.setMaximum(np.nanmax(ERVarray[:,1]))
             
             self.zeroLevelBox.setValue((np.nanmax(ERVarray[:,1])+np.nanmin(ERVarray[:,1]))/2)
- #           self.zeroLevelBox.setValue((np.nanmax(ERVarray[:,1])))
             
             
             self.corrRecalc()

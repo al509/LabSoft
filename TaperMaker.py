@@ -1,4 +1,4 @@
-##########
+﻿##########
 ## V.2
 ##########
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -168,6 +168,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             if self.Shutter.getToggle() == "0":
                 self.Shutter.setToggle()
             self.Laser.setOn()
+
             
             self.stretchButtonClickedN = 0
             self.logText("Laser taper making started")
