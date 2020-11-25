@@ -165,7 +165,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
     def start(self):
         try:
             self.Shutter.setMode(1)
-            if self.Shutter.getToggle() == "1":
+            if self.Shutter.getToggle() == "0":
                 self.Shutter.setToggle()
             self.Laser.setOn()
             
