@@ -18,7 +18,7 @@ class Laser(serial.Serial):
         self.pause=0.01
         self.repeat=0.1
         self. maxAttempts = 10;
-
+        self.setMode('MANCLOSED')
 
     def writeP(self, byte):
         time.sleep(self.pause)

@@ -35,6 +35,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
          self.setupUi(self) 
          self.isNotStarted = threading.Event()
          self.isNotStarted.set()        
+
          self.setupButtons()
          self.setupBox()
          self.setupTable()
@@ -90,6 +91,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             # Trigger the canvas to update and redraw.
             self.canvas.draw()
 
+
     def interfaceBlock(self, flag):
         '''Block the interface while the shooting proccess running'''
         blk = not flag
@@ -97,6 +99,18 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
         self.StagesConrtolBox.setEnabled(blk)
         self.ParametersBox.setEnabled(blk)
         self.annealBox.setEnabled(blk)
+
+    def startBlock(self, flag):
+        self.interfaceBlock(flag)
+        blk = not flag
+        self.ParametersBox.setEnabled(True)
+        self.fileButton.setEnabled(blk)
+        self.powerSpinBox.setEnabled(blk)
+        self.openSpinBox.setEnabled(blk)
+        self.periodSpinBox.setEnabled(blk)
+        self.saveButton.setEnabled(blk)
+        if (flag == False):
+            self.startButton.setEnabled(True)
 
     def setupButtons(self):
         '''Connect all buttons to their functions'''
@@ -129,7 +143,6 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
         self.tableWidget.setColumnCount(2)
         self.tableWidget.setRowCount(1)
         self.tableWidget.setHorizontalHeaderLabels(["Coordinate", "Number of shots"])
-
 
     def manualConnectionClicked(self):
         '''Change the "Conection" box when the "Manual connection" (un)checked'''
@@ -287,20 +300,15 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
 
     def start(self):
         try:
-            self.interfaceBlock(True)
-            self.ParametersBox.setEnabled(True)
-            self.fileButton.setEnabled(False)
-            self.powerSpinBox.setEnabled(False)
-            self.openSpinBox.setEnabled(False)
-            self.periodSpinBox.setEnabled(False)
-            self.saveButton.setEnabled(False)
+            self.startBlock(True)
 
             power = self.powerSpinBox.value()
             Topen = self.openSpinBox.value()
             Tperiod = self.periodSpinBox.value()
             self.isNotStarted.clear()
 
-            self.Laser.setPower(power)
+            Laser.setMode('MANCLOSED')
+            Laser.setPower(power)
 
             self.Shutter.setMode(1)
             if self.Shutter.getToggle() == "1":
@@ -312,12 +320,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             if self.isNotStarted.isSet():
                 self.Laser.setOff()
                 self.logWarningText("Interrupted")
-                self.interfaceBlock(False)
-                self.fileButton.setEnabled(True)
-                self.powerSpinBox.setEnabled(True)
-                self.openSpinBox.setEnabled(True)
-                self.periodSpinBox.setEnabled(True)
-                self.saveButton.setEnabled(True)
+                self.startBlock(False)
                 self.startButton.setEnabled(True)
                 return
             self.logText("Laser heated. Starting process")
@@ -327,13 +330,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
                 if self.isNotStarted.isSet():
                     self.Laser.setOff()
                     self.logWarningText("Interrupted")
-                    self.interfaceBlock(False)
-                    self.fileButton.setEnabled(True)
-                    self.powerSpinBox.setEnabled(True)
-                    self.openSpinBox.setEnabled(True)
-                    self.periodSpinBox.setEnabled(True)
-                    self.saveButton.setEnabled(True)
-                    self.startButton.setEnabled(True)
+                    self.startBlock(False)
                     return
 
                 x_item = self.tableWidget.item(i, 0)
@@ -348,7 +345,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             self.Laser.setOff()
             self.logText("Completed")
             self.isNotStarted.set()
-            self.interfaceBlock(False)
+            self.startBlock(False)
         except AttributeError:
             self.logWarningText("Looks like there are empty values" +
                                "in coordinates list. Process stopped.")
@@ -358,7 +355,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
         except:
             self.logWarningText("Process failed: "+ str(sys.exc_info()[1]))
             self.isNotStarted.set()
-            self.interfaceBlock(False)
+            self.startBlock(False)
             try:
                 self.Laser.setOff()
             except:
@@ -607,8 +604,8 @@ def main():
         app = QtWidgets.QApplication(sys.argv)
     else:
         app = QtWidgets.QApplication.instance()
-             
-    
+
+
     main = MainApp()
     main.show()
     ####################
