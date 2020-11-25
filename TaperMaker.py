@@ -1,11 +1,6 @@
-﻿##########
-## V.2
-##########
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QApplication
+﻿from PyQt5 import QtCore, QtWidgets
 
 
-from libs import SynradLaser
 import sys
 import numpy as np
 import threading
@@ -14,7 +9,6 @@ from ui import TM as ui
 import math
 import time
 from common.Common import Worker, CommonClass
-from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem
 
 
 
@@ -57,8 +51,6 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
         
     def setupButtons(self):
         ########## Button conections ##########
-        # self.ConnectionLaserButton.clicked.connect(self.laserButtonClicked)
-        # self.ConnectionStagesButton.clicked.connect(self.stagesButtonClicked)
         self.StagesToZerosButton.clicked.connect(self.stagesToZerosClicked)
         self.StagesToHomeButton.clicked.connect(self.stagesToHomeClicked)
         self.MoveStagesButton.clicked.connect(self.moveStagesClicked)
@@ -93,14 +85,6 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             self.AutoDetectButton.setEnabled(True)
             self.ConnectionBox.setGeometry(QtCore.QRect(50, 40, 211, 121))
 
-
-    def laserButtonClicked(self):
-        try:
-            Laser=SynradLaser.Laser("COM" + self.PortField.text())
-            self.logText('The laser was connected')
-            # номер COM  порта
-        except:
-            self.logWarningText(str(sys.exc_info()[1]))
 
     def stagesButtonClicked(self):
         global motor1
@@ -188,7 +172,6 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             while(i <= int(self.NumberOfCyclesField.text()) * 2):
                 self.Laser.setPower(self.PowerArray[i-1])
                 self.NumberOfCycleField.setText(str(math.floor(i/ 2 + 1)))
-#                if (i>int(self.NumberOfCyclesField.text())*2 - 4): winsound.Beep(self.frequency, self.duration)
                 motor1.set_velocity_parameters(0, self.a1, self.v1)
                 motor2.set_velocity_parameters(0, self.a2, self.v2)
                 motor1.move_by(-self.s1, False)
