@@ -1,82 +1,78 @@
 DEBUG = False
-import os
+import os, sys, time, threading, importlib
 from pathlib import Path
-from serial import SerialException
 from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
+from PyQt5.QtWidgets import QTableWidgetItem
 from PyQt5.QtWidgets import QFileDialog
-import serial.tools.list_ports
-import sys
 from ui import IM as ui
-from libs import SynradLaser, SC10Shutter
-import time
-import threading
 import numpy as np
-import importlib
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
-
-
-class Worker(QtCore.QRunnable):
-
-    def __init__(self, fn, *args, **kwargs):
-        super(Worker, self).__init__()
-        # Store constructor arguments (re-used for processing)
-        self.fn = fn
-        self.args = args
-        self.kwargs = kwargs
-
-    def run(self):
-        self.fn(*self.args, **self.kwargs)
-
+from common.Common import Worker, CommonClass
 
 class MplCanvas(FigureCanvasQTAgg):
-
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = fig.add_subplot(111)
         super(MplCanvas, self).__init__(fig)
 
 
-
-class MainApp(QMainWindow, ui.Ui_MainWindow):
+class MainApp(CommonClass, ui.Ui_MainWindow):
 
     def __init__(self):
-         QMainWindow.__init__(self)
-         ui.Ui_MainWindow.__init__(self)
-
-         self.threadpool = QtCore.QThreadPool()
-         self.isNotStarted = threading.Event()
-         self.isNotStarted.set()
-
-         global Laser
-         global Shutter
-         global Motor
-         global timer
-
-         self.timeToHeat = 30 # sec
-         self.motorDefaultSpeed = 5 ## mm/s
+         ''''Class initialization'''
+        
+         # Define constants
+         self.sliderZero  = 1548.195
+         self.stepsInMm = 2.5/1000   
          self.filedir = "saves"
+         self.ERVdir = "."
+         self.IMSdir = "."
+        
+         # Run initialization
+         CommonClass.__init__(self)
+         ui.Ui_MainWindow.__init__(self)
+         self.setupUi(self) 
+         self.isNotStarted = threading.Event()
+         self.isNotStarted.set()        
 
-         self.setupUi(self)
-         self.setupBox()
          self.setupButtons()
+         self.setupBox()
          self.setupTable()
 
-         worker1 = Worker(self.setupMotor)
-         self.threadpool.start(worker1)
-         worker2 = Worker(self.autoDetectClicked)
-         self.threadpool.start(worker2)
 
+         # Start to detect equipment
+         self.threadpool.start(self.worker1)
+         self.threadpool.start(self.worker2)
 
+         #define plot for function generator        
          self.canvas = MplCanvas(self, width=5, height=4, dpi=100)
          toolbar = NavigationToolbar(self.canvas, self)
 
          layout = QtWidgets.QGridLayout(self.tab_2)
          layout.addWidget(toolbar)
          layout.addWidget(self.canvas)
+         
+         #definie  ERV plot for correction
+         self.ERVcanvas = MplCanvas(self, dpi=70)        
+         ERVlayout = QtWidgets.QGridLayout(self.ERVView)
+         ERVlayout.addWidget(self.ERVcanvas)
+         
+         #define  correction plot for correction
+         self.corCanvas = MplCanvas(self, dpi=70)        
+         corLayout = QtWidgets.QGridLayout(self.correctionView)
+         corLayout.addWidget(self.corCanvas)
 
     def update_plot(self):
+        '''
+        Draw/redraw the function plot in the "N(x)" tab from table located in
+        the "Main functions" tab.
+
+        Returns
+        -------
+        None.
+
+        '''
         if self.tabWidget.currentIndex() == 1 and self.tableWidget.rowCount() > 1:
             xdata = []
             ydata = []
@@ -96,19 +92,8 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             self.canvas.draw()
 
 
-
-
-    def runThread(self, func):
-        worker = Worker(func)
-        self.threadpool.start(worker)
-
-
-    def setupBox(self):
-        self.laserPortLineEdit.setVisible(False)
-        self.shutterPortLineEdit.setVisible(False)
-        self.manualConnectButton.setVisible(False)
-
     def interfaceBlock(self, flag):
+        '''Block the interface while the shooting proccess running'''
         blk = not flag
         self.ConnectionBox.setEnabled(blk)
         self.StagesConrtolBox.setEnabled(blk)
@@ -128,6 +113,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             self.startButton.setEnabled(True)
 
     def setupButtons(self):
+        '''Connect all buttons to their functions'''
         self.manualConnectionBox.stateChanged.connect(self.manualConnectionClicked)
         self.AutoDetectButton.clicked.connect(self.autoDetectClicked)
         self.manualConnectButton.clicked.connect(self.manualConnectClicked)
@@ -142,194 +128,39 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
         self.tableWidget.cellChanged.connect(self.cellChangeHandler)
         self.tableWidget.cellActivated.connect(self.insertRow)
         self.tabWidget.currentChanged.connect(self.update_plot)
-        self.generateArrayButton.clicked.connect(self.generateArray)
-
+        self.generateArrayButton.clicked.connect(self.generateArray)   
+        self.inputERVButton.clicked.connect(self.corLoadERV)
+        self.inputIMSButton.clicked.connect(self.corLoadIMS)
+        self.zeroLevelBox.valueChanged.connect(self.corrRecalc)
+        self.zeroLevelSlider.valueChanged.connect(lambda: self.zeroLevelBox.setValue(float(self.zeroLevelBox.minimum() + self.zeroLevelSlider.value()*(self.zeroLevelBox.maximum()-self.zeroLevelBox.minimum())/100)))
+        self.x0Slider.valueChanged.connect(lambda: self.x0Box.setValue(self.x0Slider.value()))
+        self.calcCorrectionButton.clicked.connect(self.correct)
+        self.x0Box.valueChanged.connect(self.corrRecalc)
 
 
     def setupTable(self):
+        '''Setup the table in the "Main features" tab'''
         self.tableWidget.setColumnCount(2)
         self.tableWidget.setRowCount(1)
         self.tableWidget.setHorizontalHeaderLabels(["Coordinate", "Number of shots"])
 
-    def setupMotor(self):
-        global Motor
-        try:
-             global timer
-             import thorlabs_apt as apt
-             Motor = apt.Motor(90864301)
-             Motor.set_move_home_parameters(2, 1, 7.0, 0.0001)
-             self.logText("Motor initialized")
-             self.LogField.append("")
-
-             timer = QtCore.QTimer()
-             timer.timeout.connect(self.tick)
-             timer.start(1)  # every 100 milliseconds
-        except:
-            self.logWarningText("Motor not initialized :"+str(sys.exc_info()[1]))
-            self.LogField.append("")
-
-    def tick(self):
-        print("tick")
-
     def manualConnectionClicked(self):
+        '''Change the "Conection" box when the "Manual connection" (un)checked'''
         if self.manualConnectionBox.isChecked() == True:
             self.laserPortLineEdit.setVisible(True)
             self.shutterPortLineEdit.setVisible(True)
             self.manualConnectButton.setVisible(True)
             self.AutoDetectButton.setEnabled(False)
-            self.ConnectionBox.setGeometry(QtCore.QRect(10, 20, 201, 161))
+            self.ConnectionBox.setGeometry(QtCore.QRect(10, 20, 211, 161))
         else:
             self.laserPortLineEdit.setVisible(False)
             self.shutterPortLineEdit.setVisible(False)
             self.manualConnectButton.setVisible(False)
             self.AutoDetectButton.setEnabled(True)
-            self.ConnectionBox.setGeometry(QtCore.QRect(10, 20, 201, 121))
-
-
-    def autoDetectClicked(self):
-
-
-        self.logText("Autodetect started")
-        isShutterConnected = False
-        isLaserConnected = False
-
-        ports = list(serial.tools.list_ports.comports())
-
-        global Shutter
-        global Laser
-
-
-        for p in ports:
-
-            if not (isLaserConnected):
-                try:
-                    Laser = SynradLaser.Laser(p.device)
-
-                    Laser.getStatus()
-
-                    isLaserConnected = True
-                    self.laserPortLabel.setText("Laser port:    " + p.device)
-                    self.logText("Laser connected")
-                    continue
-                except SerialException:
-                    if DEBUG:
-                        self.logWarningText("Laser can't open, port is busy:"+p.device)
-                except:
-                    if DEBUG:
-                        self.logWarningText("Laser was not connected on "+p.device+": "+str(sys.exc_info()[1]))
-                    Laser.close()
-                    pass
-
-            if not (isShutterConnected):
-                try:
-                    Shutter = SC10Shutter.Shutter(p.device)
-                    Shutter.getID()
-                    isShutterConnected = True
-                    self.shutterPortLabel.setText("Shutter port: "+p.device)
-                    self.logText("Shutter connected")
-                    continue
-                except SerialException:
-                    if DEBUG:
-                        self.logWarningText("Shutter can't open, port is busy:"+p.device)
-                except:
-                    if DEBUG:
-                        self.logWarningText("Shutter was not connected on "+p.device+": "+str(sys.exc_info()[1]))
-                    Shutter.sc._file.close()
-                    pass
-
-        if not (isShutterConnected):
-            self.logWarningText("Shutter not found")
-            self.shutterPortLabel.setText("Shutter port: COM")
-        if not (isLaserConnected):
-            self.logWarningText("Laser not found")
-            self.laserPortLabel.setText("Laser port:    COM")
-
-        self.LogField.append("")
-
-    def stagesToZerosClicked(self):
-        try:
-            self.interfaceBlock(True)
-            Motor.set_velocity_parameters(0, 3.5, 4.5)
-
-            Motor.move_home(True)
-            self.logText('Stages moved to zeros')
-            self.interfaceBlock(False)
-        except:
-            self.logWarningText(str(sys.exc_info()[1]))
-            self.interfaceBlock(False)
-            self.StagesToHomeButton.setEnabled(True)
-
-    def stagesToHomeClicked(self):
-        try:
-            self.interfaceBlock(True)
-#            Motor.backlash_distance(0)
-
-            Motor.set_velocity_parameters(0, 3.5, 4.5)
-
-            Home_value2 = 53
-
-            Motor.move_to(Home_value2, True)
-            self.logText('Stages moved to start position')
-            self.interfaceBlock(False)
-        except:
-            self.logWarningText(str(sys.exc_info()[1]))
-            self.interfaceBlock(False)
-
-    def moveStagesClicked(self):
-        try:
-            self.interfaceBlock(True)
-            Motor.set_velocity_parameters(0, 3.5, 4.5)
-            Motor.move_by(float(self.MoveStagesField.text()), False)
-            self.logText('Stages moved')
-        except:
-            self.logWarningText(str(sys.exc_info()[1]))
-            self.interfaceBlock(False)
-            self.interfaceBlock(False)
-
-    def manualConnectClicked(self):
-        global Laser
-        global Shutter
-
-        try:
-            Laser.close()
-            Shutter.sc._file.close()
-        except:
-            if DEBUG:
-                self.logWarningText("Laser disconnect: " + str(sys.exc_info()[1]))
-            pass
-
-        self.logText("Manual connection started")
-        try:
-            Laser = SynradLaser.Laser("COM"+self.laserPortLineEdit.text())
-            Laser.getStatus()
-            self.logText("Laser connected")
-            self.shutterPortLabel.setText("Laser port:    COM" + self.laserPortLineEdit.text())
-
-        except SerialException:
-            self.logWarningText("Laser connection failed: "+ str(sys.exc_info()[1]))
-            self.laserPortLabel.setText("Laser port:    COM")
-        except:
-            self.logWarningText("Laser connection failed: "+ str(sys.exc_info()[1]))
-            self.laserPortLabel.setText("Laser port:    COM")
-            Laser.close()
-
-        try:
-            Shutter = SC10Shutter.Shutter("COM" + self.shutterPortLineEdit.text())
-            Shutter.getID()
-            self.logText("Shutter connected")
-            self.shutterPortLabel.setText("Shutter port: COM" + self.shutterPortLineEdit.text())
-        except SerialException:
-            self.logWarningText("Shuter connection failed: "+ str(sys.exc_info()[1]))
-            self.shutterPortLabel.setText("Shutter port: COM")
-        except:
-            self.logWarningText("Shuter connection failed: "+ str(sys.exc_info()[1]))
-            self.shutterPortLabel.setText("Shutter port: COM")
-            Shutter.sc._file.close()
-
-        self.LogField.append("")
-
+            self.ConnectionBox.setGeometry(QtCore.QRect(10, 20, 211, 121))
 
     def fileClicked(self):
+        '''Load all parameters from the file''' 
         try:
 
             filepath = QFileDialog.getOpenFileName(self, "Open File", self.filedir,
@@ -382,6 +213,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                                  + str(sys.exc_info()[1]))
 
     def saveConfig(self):
+        '''Save all parameters to the file'''
         try:
             filepath = QFileDialog.getSaveFileName(self, "Open File", self.filedir,
                                         "Impulse Maker savefile (*.ims)")[0]
@@ -422,7 +254,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
 
             f.close()
             self.fileEdit.setText(filename)
-            self.logText("Successfully saved configuration file " + filename)
+            self.logText("Successfully saved the configuration file " + filename)
         except AttributeError:
             self.logWarningText("File saving failed: incorrect number of rows."
                                + " Make sure that all rows filled")
@@ -439,27 +271,27 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             self.startButton.setEnabled(True)
             start_pos = 53
             end_pos = 75
-            Laser. setPower(self.annealPowerBox.value())
-            Shutter.setMode(1)
-            if Shutter.getToggle() == "1":
-                Shutter.setToggle()
+            self.Laser.setPower(self.annealPowerBox.value())
+            self.Shutter.setMode(1)
+            if self.Shutter.getToggle() == "1":
+                self.Shutter.setToggle()
 
-            self.logText("Moving to start position")
-            Motor.set_velocity_parameters(0, 10, self.motorDefaultSpeed)
-            Motor.move_to(start_pos, True)
-            Motor.set_velocity_parameters(0, 10, self.annealSpeedBox.value())
+            self.logText("Moving to the start position")
+            self.Motor.set_velocity_parameters(0, 10, self.motorDefaultSpeed)
+            self.Motor.move_to(start_pos, True)
+            self.Motor.set_velocity_parameters(0, 10, self.annealSpeedBox.value())
 
-            Laser.setOn()
+            self.Laser.setOn()
             self.logText("Starting to burn")
-            Shutter.setToggle()
-            Motor.move_to(end_pos, True)
-            Shutter.setToggle()
-            Laser.setOff()
+            self.Shutter.setToggle()
+            self.Motor.move_to(end_pos, True)
+            self.Shutter.setToggle()
+            self.Laser.setOff()
             self.logText("Anneal finished")
             self.interfaceBlock(False)
         except:
             try:
-                Laser.setOff()
+                self.Laser.setOff()
             except:
                 pass
             self.logWarningText("Process failed: "+ str(sys.exc_info()[1]))
@@ -478,15 +310,15 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             Laser.setMode('MANCLOSED')
             Laser.setPower(power)
 
-            Shutter.setMode(1)
-            if Shutter.getToggle() == "1":
-                Shutter.setToggle()
-            Laser.setOn()
+            self.Shutter.setMode(1)
+            if self.Shutter.getToggle() == "1":
+                self.Shutter.setToggle()
+            self.Laser.setOn()
             self.logText("Heating laser")
 
             self.isNotStarted.wait(self.timeToHeat)
             if self.isNotStarted.isSet():
-                Laser.setOff()
+                self.Laser.setOff()
                 self.logWarningText("Interrupted")
                 self.startBlock(False)
                 self.startButton.setEnabled(True)
@@ -496,7 +328,7 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             for i in range(0, self.tableWidget.rowCount()):
 
                 if self.isNotStarted.isSet():
-                    Laser.setOff()
+                    self.Laser.setOff()
                     self.logWarningText("Interrupted")
                     self.startBlock(False)
                     return
@@ -507,25 +339,25 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
                 n = (int(n_item.text()))
                 self.logText("Processing coordinate "
                              + str(x) + " with " + str(n) + " times")
-                Motor.move_to(x, True)
+                self.Motor.move_to(x, True)
                 self.shutUp(n, Topen, Tperiod - Topen)
 
-            Laser.setOff()
+            self.Laser.setOff()
             self.logText("Completed")
             self.isNotStarted.set()
             self.startBlock(False)
         except AttributeError:
             self.logWarningText("Looks like there are empty values" +
                                "in coordinates list. Process stopped.")
-            Laser.setOff()
-            self.startBlock(False)
+            self.Laser.setOff()
+            self.interfaceBlock(False)
             self.isNotStarted.set()
         except:
             self.logWarningText("Process failed: "+ str(sys.exc_info()[1]))
             self.isNotStarted.set()
             self.startBlock(False)
             try:
-                Laser.setOff()
+                self.Laser.setOff()
             except:
                 pass
 
@@ -605,34 +437,159 @@ class MainApp(QMainWindow, ui.Ui_MainWindow):
             self.logText("Array generated")
         except ValueError:
              self.logWarningText(str(sys.exc_info()[1]))
+             
+             
+    def loadShotsFromIms(self, filename):
+        f = open(filename, 'r')
+    
+        numLines = int(f.readline())
+        shotsArray = np.zeros((numLines, 2))
+        f.readline()
+        f.readline()
+        for i in range(0, numLines):
+            line = f.readline().split()
+            shotsArray[i,0]=float(line[0]) 
+            shotsArray[i,1]=int(line[1])
+        
+        f.close()
+    
+        return shotsArray
+    
+    def corrRecalc(self):
+        try:    
+            ERVarray = np.loadtxt(self.inputERVEdit.text())[:,:2]    #   scan array
+            
 
-    def logText(self, text):
-        self.LogField.append(">" + text)
+            
+            
+            self.ERVcanvas.axes.cla()  # Clear the canvas.
+            self.ERVcanvas.axes.plot(ERVarray[:,0],ERVarray[:,1], 'b')
+            self.ERVcanvas.axes.axhline(self.zeroLevelBox.value(),color='green', ls='--', lw=1)
+            self.ERVcanvas.axes.axvline(self.x0Box.value(),color='red',ls='--', lw = 1)
+            self.ERVcanvas.draw()
+            
+            if self.inputIMSEdit.text() != "":
+                
+                IMSarray = self.loadShotsFromIms(self.inputIMSEdit.text())  # shots array
+                ERVmod = ERVarray[ERVarray[:,1] > self.zeroLevelBox.value()]    # only modified points
+                x_n = (ERVmod[:,0] * self.stepsInMm) + (IMSarray[0,0] - self.x0Box.value()* self.stepsInMm)
 
 
-    def logWarningText(self, text):
-        self.LogField.append("<span style=\" font-size:8pt; font-weight:600; color:#ff0000;\" >"
-                             + ">" + text + "</span>")
+                y = np.empty(len(IMSarray))
+
+                for i in range(len(IMSarray)):
+                    cor = np.argmin(abs(IMSarray[i,0] - x_n))
+                    y[i] = ERVmod[cor,1]    # ERV coordinates. corresponding to x points
+
+                y_n = (y - self.zeroLevelBox.value())/np.mean((y-self.zeroLevelBox.value())/IMSarray[:,1]) # ERV Y points in IMS coordinates
+                
+                y_new= IMSarray[:,1] + max(y_n - IMSarray[:,1])
+
+                y_corr = np.round(y_new-y_n)
+
+                            
+                self.corCanvas.axes.cla()  # Clear the canvas.
+                self.corCanvas.axes.plot(IMSarray[:,0],IMSarray[:,1], 'b')
+                self.corCanvas.axes.plot(IMSarray[:,0],y_n, 'g')
+                self.corCanvas.axes.plot(IMSarray[:,0],y_new, '--g')
+                self.corCanvas.draw()
+                
+                return (IMSarray[:,0],y_corr)
+            
+        except:
+            self.logWarningText(str(sys.exc_info()[1]))
+        
+    def IMSredraw(self):        
+        shotsArray = self.loadShotsFromIms(self.inputIMSEdit.text())
+        
+        self.corCanvas.axes.cla()  # Clear the canvas.
+        self.corCanvas.axes.plot(shotsArray[:,0],shotsArray[:,1], 'b')
+        self.corCanvas.draw()
+        
+        if self.inputERVEdit.text() != "":
+            self.corrRecalc()
+        
+    def corLoadERV(self):
+        try:
+            filepath = QFileDialog.getOpenFileName(self, "Open File", self.ERVdir,
+                                        "ERV data file (*.txt)")[0]
+
+            self.ERVdir = str(Path(filepath).parent)
+            if filepath == "":
+                self.logText("File load aborted")
+                return
+            self.inputERVEdit.setText(filepath)
+            
+            ERVarray = np.loadtxt(self.inputERVEdit.text())[:,:2]
+            
+            self.x0Slider.setMinimum(ERVarray[0,0])
+            self.x0Box.setMinimum(ERVarray[0,0])
+            self.x0Slider.setMaximum(int(ERVarray[-1,0]))
+            self.x0Box.setMaximum(int(ERVarray[-1,0]))
+            
+            self.x0Slider.setValue(ERVarray[0,0] + 60/2.5)
+            
+    
+           
+            self.zeroLevelBox.setMinimum(np.nanmin(ERVarray[:,1]))                                 
+            self.zeroLevelBox.setMaximum(np.nanmax(ERVarray[:,1]))
+            
+            self.zeroLevelBox.setValue((np.nanmax(ERVarray[:,1])+np.nanmin(ERVarray[:,1]))/2)
+            
+            
+            self.corrRecalc()
+        except:
+             self.logWarningText(str(sys.exc_info()[1]))
+             
+    def corLoadIMS(self):
+        try:
+            filepath = QFileDialog.getOpenFileName(self, "Open File", self.IMSdir,
+                                        "IMS data file (*.ims)")[0]
+
+            self.IMSdir = str(Path(filepath).parent)
+            if filepath == "":
+                self.logText("File load aborted")
+                return
+            self.inputIMSEdit.setText(filepath)
+            
+            self.IMSredraw()
+        except:
+             self.logWarningText(str(sys.exc_info()[1]))
+             
+        
+    def correct(self):
+        try:
+            corArray = self.corrRecalc()
+            num_lines = len(corArray[0])
+            self.tableWidget.setRowCount(num_lines)
+            for i in range(0, num_lines):
+                x_item = QTableWidgetItem(str(corArray[0][i]))
+                n_item = QTableWidgetItem(str(int(corArray[1][i])))
+                self.tableWidget.setItem(i, 0, x_item)
+                self.tableWidget.setItem(i, 1, n_item)
+            self.logText("Array generated successfully. See 'Main features' and 'N(x)' tabs for details")
+        except:
+            self.logWarningText(str(sys.exc_info()[1]))
 
     def toggleShutter(self):
         try:
-            Shutter.setMode(1)
-            Shutter.setToggle()
+            self.Shutter.setMode(1)
+            self.Shutter.setToggle()
         except:
             self.logWarningText(str(sys.exc_info()[1]))
 
     def shutUp(self, N, Topen, Tclose):
-        Shutter.setMode(4)
-        Shutter.setRepeat(N)
-        Shutter.setOpenTime(Topen)
-        Shutter.setCloseTime(Tclose)
-        Shutter.setToggle()
+        self.Shutter.setMode(4)
+        self.Shutter.setRepeat(N)
+        self.Shutter.setOpenTime(Topen)
+        self.Shutter.setCloseTime(Tclose)
+        self.Shutter.setToggle()
         time.sleep(N * (Topen + Tclose)/1000)
 
     def __del__(self):
         try:
-            Laser.close()
-            Shutter.sc._file.close()
+            self.Laser.close()
+            self.Shutter.sc._file.close()
             apt._cleanup()
             print ("Cleared")
         except NameError:

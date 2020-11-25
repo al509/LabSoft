@@ -759,8 +759,8 @@ p, li { white-space: pre-wrap; }
        <rect>
         <x>10</x>
         <y>10</y>
-        <width>239</width>
-        <height>150</height>
+        <width>187</width>
+        <height>133</height>
        </rect>
       </property>
       <layout class="QFormLayout" name="correctionLayout">
@@ -823,11 +823,7 @@ p, li { white-space: pre-wrap; }
           <double>1540.900000000000091</double>
          </property>
          <property name="maximum">
-<<<<<<< Updated upstream
           <double>1555.099999999999909</double>
-=======
-          <double>1555.000000000000000</double>
->>>>>>> Stashed changes
          </property>
          <property name="singleStep">
           <double>0.001000000000000</double>

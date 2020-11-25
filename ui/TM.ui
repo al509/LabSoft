@@ -14,63 +14,6 @@
    <string>Taper Making UI v.2 (05.02.2020)</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QGroupBox" name="ConnectionBox">
-    <property name="geometry">
-     <rect>
-      <x>50</x>
-      <y>40</y>
-      <width>181</width>
-      <height>121</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>Connection</string>
-    </property>
-    <widget class="QWidget" name="verticalLayoutWidget">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>20</y>
-       <width>168</width>
-       <height>96</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="ConnectionLayout">
-      <item>
-       <layout class="QHBoxLayout" name="PortLayout">
-        <item>
-         <widget class="QLabel" name="PortLabel">
-          <property name="text">
-           <string>Laser port: COM</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLineEdit" name="PortField">
-          <property name="text">
-           <string>1</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <widget class="QPushButton" name="ConnectionLaserButton">
-        <property name="text">
-         <string>Laser</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="ConnectionStagesButton">
-        <property name="text">
-         <string>Stages</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </widget>
    <widget class="QGroupBox" name="LaserControlBox">
     <property name="geometry">
      <rect>
@@ -355,6 +298,96 @@
      </property>
     </widget>
    </widget>
+   <widget class="QGroupBox" name="ConnectionBox">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>30</y>
+      <width>211</width>
+      <height>121</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Connection</string>
+    </property>
+    <widget class="QWidget" name="verticalLayoutWidget">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>19</y>
+       <width>191</width>
+       <height>131</height>
+      </rect>
+     </property>
+     <layout class="QVBoxLayout" name="ConnectionLayout">
+      <item>
+       <widget class="QPushButton" name="AutoDetectButton">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="text">
+         <string>AutoDetect</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QFormLayout" name="ManualConnectionLayout">
+        <property name="verticalSpacing">
+         <number>6</number>
+        </property>
+        <item row="0" column="0">
+         <widget class="QCheckBox" name="manualConnectionBox">
+          <property name="text">
+           <string>Manual</string>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="laserPortLabel">
+          <property name="text">
+           <string>Laser port:    COM</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLineEdit" name="laserPortLineEdit">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="clearButtonEnabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="shutterPortLabel">
+          <property name="text">
+           <string>Shutter port: COM</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QLineEdit" name="shutterPortLineEdit">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0" colspan="2">
+         <widget class="QPushButton" name="manualConnectButton">
+          <property name="text">
+           <string>Connect</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -362,7 +395,7 @@
      <x>0</x>
      <y>0</y>
      <width>737</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>
