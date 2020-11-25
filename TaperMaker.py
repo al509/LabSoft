@@ -165,7 +165,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
         global Shutter
         try:
             Shutter.setMode(1)
-            if Shutter.getToggle() == "1":
+            if Shutter.getToggle() == "0":
                 Shutter.setToggle()
             Laser.setOn()
             
