@@ -171,7 +171,7 @@ class Ui_MainWindow(object):
         self.annealBox.setGeometry(QtCore.QRect(320, 40, 211, 111))
         self.annealBox.setObjectName("annealBox")
         self.verticalLayoutWidget_2 = QtWidgets.QWidget(self.annealBox)
-        self.verticalLayoutWidget_2.setGeometry(QtCore.QRect(10, 19, 197, 94))
+        self.verticalLayoutWidget_2.setGeometry(QtCore.QRect(10, 19, 197, 81))
         self.verticalLayoutWidget_2.setObjectName("verticalLayoutWidget_2")
         self.annealLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_2)
         self.annealLayout.setContentsMargins(0, 0, 0, 0)
