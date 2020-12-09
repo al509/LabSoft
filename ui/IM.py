@@ -67,7 +67,7 @@ class Ui_MainWindow(object):
         self.ParametersBox.setGeometry(QtCore.QRect(10, 300, 211, 141))
         self.ParametersBox.setObjectName("ParametersBox")
         self.layoutWidget = QtWidgets.QWidget(self.ParametersBox)
-        self.layoutWidget.setGeometry(QtCore.QRect(10, 10, 210, 156))
+        self.layoutWidget.setGeometry(QtCore.QRect(10, 10, 191, 131))
         self.layoutWidget.setObjectName("layoutWidget")
         self.ParametersLayout = QtWidgets.QFormLayout(self.layoutWidget)
         self.ParametersLayout.setContentsMargins(0, 0, 0, 0)
@@ -171,7 +171,7 @@ class Ui_MainWindow(object):
         self.annealBox.setGeometry(QtCore.QRect(320, 40, 211, 111))
         self.annealBox.setObjectName("annealBox")
         self.verticalLayoutWidget_2 = QtWidgets.QWidget(self.annealBox)
-        self.verticalLayoutWidget_2.setGeometry(QtCore.QRect(10, 19, 197, 94))
+        self.verticalLayoutWidget_2.setGeometry(QtCore.QRect(10, 19, 197, 81))
         self.verticalLayoutWidget_2.setObjectName("verticalLayoutWidget_2")
         self.annealLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_2)
         self.annealLayout.setContentsMargins(0, 0, 0, 0)
@@ -365,7 +365,7 @@ class Ui_MainWindow(object):
         self.x0Slider.setObjectName("x0Slider")
         self.tabWidget.addTab(self.tab_4, "")
         self.StagesConrtolBox = QtWidgets.QGroupBox(self.centralwidget)
-        self.StagesConrtolBox.setGeometry(QtCore.QRect(10, 180, 211, 111))
+        self.StagesConrtolBox.setGeometry(QtCore.QRect(10, 180, 211, 121))
         self.StagesConrtolBox.setObjectName("StagesConrtolBox")
         self.gridLayoutWidget = QtWidgets.QWidget(self.StagesConrtolBox)
         self.gridLayoutWidget.setGeometry(QtCore.QRect(10, 20, 191, 100))
@@ -388,7 +388,7 @@ class Ui_MainWindow(object):
         self.StagesLayout.addWidget(self.StagesToHomeButton, 1, 0, 1, 2)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 26))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 21))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
@@ -396,7 +396,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(3)
+        self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         MainWindow.setTabOrder(self.AutoDetectButton, self.manualConnectionBox)
         MainWindow.setTabOrder(self.manualConnectionBox, self.shutterPortLineEdit)
@@ -405,7 +405,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "Impulse maker v0.81 (19.11.2020)"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Impulse maker v0.9 (09.12.2020)"))
         self.ConnectionBox.setTitle(_translate("MainWindow", "Connection"))
         self.AutoDetectButton.setText(_translate("MainWindow", "AutoDetect"))
         self.manualConnectionBox.setText(_translate("MainWindow", "Manual"))

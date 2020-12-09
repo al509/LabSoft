@@ -68,6 +68,7 @@ class Shutter:
         """
 
         self.sc = ik.thorlabs.SC10.open_serial(ShutterCOMPort, 9600, timeout=0.2)
+        self.sc.prompt = '> '
 
     def getID(self) -> str:
         """Return the model number and firmware revision."""
