@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Taper Making UI v.2 (05.02.2020)</string>
+   <string>Taper Making UI v.2 .1(09.12.2020)</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QGroupBox" name="LaserControlBox">

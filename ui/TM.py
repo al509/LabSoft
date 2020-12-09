@@ -166,7 +166,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "Taper Making UI v.2 (05.02.2020)"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Taper Making UI v.2 .1(09.12.2020)"))
         self.LaserControlBox.setTitle(_translate("MainWindow", "Taping controll"))
         self.StartStopButton.setText(_translate("MainWindow", "Start/stop"))
         self.FileBox.setText(_translate("MainWindow", "Please select file"))

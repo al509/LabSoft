@@ -9,8 +9,8 @@ from ui import TM as ui
 import math
 import time
 from common.Common import Worker, CommonClass
-
-
+from packaging import version
+from conda import __version__ as condaVersion
 
 class MainApp(CommonClass, ui.Ui_MainWindow):
     def __init__(self):
@@ -277,9 +277,8 @@ def main():
     
     main = MainApp()
     main.show()
-    ####################
-#    sys.exit(app.exec())
-    ####################
+    if (version.parse(condaVersion) > version.parse("4.9.0")):
+        sys.exit(app.exec())
     return main
 
 

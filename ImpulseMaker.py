@@ -9,6 +9,8 @@ import numpy as np
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 from common.Common import Worker, CommonClass
+from packaging import version
+from conda import __version__ as condaVersion
 
 class MplCanvas(FigureCanvasQTAgg):
     def __init__(self, parent=None, width=5, height=4, dpi=100):
@@ -608,9 +610,8 @@ def main():
 
     main = MainApp()
     main.show()
-    ####################
-#    sys.exit(app.exec())
-    ####################
+    if (version.parse(condaVersion) > version.parse("4.9.0")):
+        sys.exit(app.exec())
     return main
 
 
