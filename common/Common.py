@@ -98,6 +98,18 @@ class CommonClass(QMainWindow):
             self.interfaceBlock(False)
             
     def autoDetectClicked(self):
+        
+        try:
+            self.Laser.close()
+        except AttributeError:
+            pass
+        
+        try:
+            self.Shutter.sc._file.close()
+        except AttributeError:
+            pass
+        
+        
 
         self.logText("Autodetect started")
 
@@ -125,8 +137,10 @@ class CommonClass(QMainWindow):
                 except:
                     if DEBUG:
                         self.logWarningText("Laser was not connected on "+p.device+": "+str(sys.exc_info()[1]))
-                    self.Laser.close()
-                    pass
+                    try:
+                        self.Laser.close()
+                    except AttributeError: 
+                        pass
 
             if not (isShutterConnected):
                 try:
@@ -142,8 +156,10 @@ class CommonClass(QMainWindow):
                 except:
                     if DEBUG:
                         self.logWarningText("Shutter was not connected on "+p.device+": "+str(sys.exc_info()[1]))
-                    self.Shutter.sc._file.close()
-                    pass
+                    try:
+                        self.Shutter.sc._file.close()
+                    except AttributeError:
+                        pass
 
         if not (isShutterConnected):
             self.logWarningText("Shutter not found")
