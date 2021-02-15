@@ -55,13 +55,7 @@ class Ui_MainWindow(object):
         self.LaserControlLayout.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.SetToTenButton)
         self.MoveOutButton = QtWidgets.QPushButton(self.formLayoutWidget)
         self.MoveOutButton.setObjectName("MoveOutButton")
-        self.LaserControlLayout.setWidget(5, QtWidgets.QFormLayout.LabelRole, self.MoveOutButton)
-        self.SetToNButton = QtWidgets.QPushButton(self.formLayoutWidget)
-        self.SetToNButton.setObjectName("SetToNButton")
-        self.LaserControlLayout.setWidget(4, QtWidgets.QFormLayout.LabelRole, self.SetToNButton)
-        self.SetToNField = QtWidgets.QLineEdit(self.formLayoutWidget)
-        self.SetToNField.setObjectName("SetToNField")
-        self.LaserControlLayout.setWidget(4, QtWidgets.QFormLayout.FieldRole, self.SetToNField)
+        self.LaserControlLayout.setWidget(4, QtWidgets.QFormLayout.LabelRole, self.MoveOutButton)
         self.StagesConrtolBox = QtWidgets.QGroupBox(self.centralwidget)
         self.StagesConrtolBox.setGeometry(QtCore.QRect(50, 170, 211, 241))
         self.StagesConrtolBox.setObjectName("StagesConrtolBox")
@@ -166,7 +160,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "Taper Making UI v.2 .1(09.12.2020)"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Taper Making UI v.2 .11(15.02.2021)"))
         self.LaserControlBox.setTitle(_translate("MainWindow", "Taping controll"))
         self.StartStopButton.setText(_translate("MainWindow", "Start/stop"))
         self.FileBox.setText(_translate("MainWindow", "Please select file"))
@@ -176,7 +170,6 @@ class Ui_MainWindow(object):
         self.NumberOfCycleLabel.setText(_translate("MainWindow", "Number of cylce:"))
         self.SetToTenButton.setText(_translate("MainWindow", "Set to 10%"))
         self.MoveOutButton.setText(_translate("MainWindow", "Move out"))
-        self.SetToNButton.setText(_translate("MainWindow", "Set to n%"))
         self.StagesConrtolBox.setTitle(_translate("MainWindow", "Stages controll"))
         self.MoveLeftStageLeftButton.setText(_translate("MainWindow", "<-"))
         self.MoveLeftStageRightButton.setText(_translate("MainWindow", "->"))

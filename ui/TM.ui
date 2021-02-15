@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Taper Making UI v.2 .1(09.12.2020)</string>
+   <string>Taper Making UI v.2 .11(15.02.2021)</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QGroupBox" name="LaserControlBox">
@@ -102,22 +102,12 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="0">
+      <item row="4" column="0">
        <widget class="QPushButton" name="MoveOutButton">
         <property name="text">
          <string>Move out</string>
         </property>
        </widget>
-      </item>
-      <item row="4" column="0">
-       <widget class="QPushButton" name="SetToNButton">
-        <property name="text">
-         <string>Set to n%</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1">
-       <widget class="QLineEdit" name="SetToNField"/>
       </item>
      </layout>
     </widget>
