@@ -38,7 +38,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
         self.t_stop = 0.12
         self.stretchButtonClickedN = 0
 
-        self.LaserPowerListName="Laser Power Script.txt"
+        self.ParametersFileName="Parameters.txt"
 
         self.setupButtons()
         self.setupBox()
@@ -47,6 +47,25 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
         self.threadpool.start(self.worker1)
         self.threadpool.start(self.worker2)
         
+    def calculateStageSpeed(self,delta_S,aver_S,t_1):
+        S_1=aver_S-delta_S/2
+        S_11=1*S_1/100 # way with acceleration
+        S_12=99*S_1/100 # way without acceleration
+
+        S_2=aver_S+delta_S/2
+        S_21=1*S_2/100 # way with acceleration
+        #S_22=95*S_2/100 # way without acceleration
+
+        # I suppose part of the way with the accelerate is smaller than part of the way without accelerate
+        V_1=S_12/t_1
+        a_1=(V_1*V_1)/(2*S_11) #at now the accelerate is agreed with constant speed
+        t_a=np.sqrt(2*S_11/a_1) # found time to accelerate    
+        #at now find a_2 
+        a_2 = 2*S_21/(t_a*t_a) #at now the accelerate is agreed with accelerate time
+        V_2 = a_2*t_a #at now the speed is agreed with acceleration
+        S_22= V_2*t_1
+        S_2=S_22+S_21
+        return a_1,V_1,S_1, a_2,V_2,S_2
         
         
     def setupButtons(self):
@@ -156,7 +175,13 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             
             self.stretchButtonClickedN = 0
             self.logText("Laser taper making started")
-            self.PowerArray=np.array(np.loadtxt(self.LaserPowerListName)[:,1])
+            DataFromFile=np.loadtxt(self.ParametersFileName)
+            delta_S, aver_S, t_1=DataFromFile[:3] # three first lines of the file are for elongation, one step move, and time needed the cycle
+            self.a1,self.v1,self.s1,self.a2,self.v2,self.s2=self.calculateStageSpeed(delta_S, aver_S, t_1)
+            self.PowerArray=DataFromFile[3:]
+            if len(self.PowerArray)<(self.NumberOfCyclesField.text()*2):
+                self.logText("Number of cycles is larger than powers specified in the Parameters files. Process interrupted")
+                return
             self.isNotStarted.clear()
             self.Laser.setPower(self.PowerArray[0])
             self.Laser.setOn()
@@ -231,7 +256,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
     def fileBoxClicked(self):
         try:
             fname = QtWidgets.QFileDialog().getOpenFileName()[0]
-            self.LaserPowerListName = fname
+            self.ParametersFileName = fname
             self.logText("Opened: " + fname)
         except:
             self.logWarningText(str(sys.exc_info()[1]))
@@ -261,8 +286,9 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
         try:
             motor1.set_velocity_parameters(0, 1.0, 0.3)
             motor2.set_velocity_parameters(0, 1.0, 0.3)
-            motor1.move_by(-1*70, False)
-            motor2.move_by(70, True)
+            distanceToMove=min(motor1.position-5,(100-motor2.position)-5)
+            motor1.move_by(-distanceToMove, False)
+            motor2.move_by(distanceToMove, True)
             self.logText('Stages moved out')
         except:
             self.logWarningText(str(sys.exc_info()[1]))
