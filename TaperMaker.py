@@ -170,20 +170,25 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             self.Shutter.setMode(1)
             if self.Shutter.getToggle() == "0":
                 self.Shutter.setToggle()
-            self.Laser.setOn()
-
-            
+                
             self.stretchButtonClickedN = 0
-            self.logText("Laser taper making started")
+            self.logText("1")
             DataFromFile=np.loadtxt(self.ParametersFileName)
+            self.logText("2")
             delta_S, aver_S, t_1=DataFromFile[:3] # three first lines of the file are for elongation, one step move, and time needed the cycle
-            self.a1,self.v1,self.s1,self.a2,self.v2,self.s2=self.calculateStageSpeed(delta_S, aver_S, t_1)
+            self.logText("3")
+            self.a2,self.v2,self.s2,self.a1,self.v1,self.s1=self.calculateStageSpeed(delta_S, aver_S, t_1)
+            self.logText("4")
+            #я здесь поменял местами индексы, так как в калкуляторе нарушено соответсвие, что первому индексу соответсвует большая скорость
             self.PowerArray=DataFromFile[3:]
-            if len(self.PowerArray)<(self.NumberOfCyclesField.text()*2):
-                self.logText("Number of cycles is larger than powers specified in the Parameters files. Process interrupted")
+            self.logText("5")
+            if len(self.PowerArray)<(int(self.NumberOfCyclesField.text())*2):
+                self.logText("Number of cycles is larger than powers specified in the Parameters files")
                 return
+            self.logText("6")
             self.isNotStarted.clear()
             self.Laser.setPower(self.PowerArray[0])
+            self.logText("Laser taper making started")
             self.Laser.setOn()
             self.NumberOfCycleField.setText("Heating up the tube")
             self.isNotStarted.wait(self.timeToHeatUpTube)
@@ -286,7 +291,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
         try:
             motor1.set_velocity_parameters(0, 1.0, 0.3)
             motor2.set_velocity_parameters(0, 1.0, 0.3)
-            distanceToMove=min(motor1.position-5,(100-motor2.position)-5)
+            distanceToMove=min(motor1.position-2,(100-motor2.position)-2)
             motor1.move_by(-distanceToMove, False)
             motor2.move_by(distanceToMove, True)
             self.logText('Stages moved out')
@@ -294,7 +299,12 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             self.logWarningText(str(sys.exc_info()[1]))
 
 
-def main():
+# def main():
+
+#     return main
+
+
+if __name__ == '__main__':
     if not QtWidgets.QApplication.instance():
         app = QtWidgets.QApplication(sys.argv)
     else:
@@ -305,9 +315,3 @@ def main():
     main.show()
     if (version.parse(condaVersion) > version.parse("4.9.0")):
         sys.exit(app.exec())
-    return main
-
-
-if __name__ == '__main__':
-
-    m = main()
