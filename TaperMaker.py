@@ -6,17 +6,22 @@ import numpy as np
 import threading
 import winsound
 from ui import TM as ui
+import json
 import math
 import time
 from common.Common import Worker, CommonClass
 from packaging import version
 from conda import __version__ as condaVersion
 
+_version_='2.13'
+_date_='08.06.21'
+
 class MainApp(CommonClass, ui.Ui_MainWindow):
     def __init__(self):
         CommonClass.__init__(self)
         ui.Ui_MainWindow.__init__(self)
         self.setupUi(self)
+        self.setWindowTitle("Taper Maker V. "+_version_+', date  ' + _date_)
         
         self.isNotStarted = threading.Event()
         self.isNotStarted.set()
@@ -38,7 +43,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
         self.t_stop = 0.12
         self.stretchButtonClickedN = 0
 
-        self.ParametersFileName="Parameters.txt"
+        self.ParametersFileName="Parameters_standard.txt"
 
         self.setupButtons()
         self.setupBox()
@@ -164,7 +169,8 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             self.logText('Stage moved')
         except:
             self.logWarningText(str(sys.exc_info()[1]))
-
+            
+ 
     def start(self):
         try:
             self.Shutter.setMode(1)
@@ -172,20 +178,9 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
                 self.Shutter.setToggle()
                 
             self.stretchButtonClickedN = 0
-            self.logText("1")
-            DataFromFile=np.loadtxt(self.ParametersFileName)
-            self.logText("2")
-            delta_S, aver_S, t_1=DataFromFile[:3] # three first lines of the file are for elongation, one step move, and time needed the cycle
-            self.logText("3")
-            self.a2,self.v2,self.s2,self.a1,self.v1,self.s1=self.calculateStageSpeed(delta_S, aver_S, t_1)
-            self.logText("4")
-            #я здесь поменял местами индексы, так как в калкуляторе нарушено соответсвие, что первому индексу соответсвует большая скорость
-            self.PowerArray=DataFromFile[3:]
-            self.logText("5")
             if len(self.PowerArray)<(int(self.NumberOfCyclesField.text())*2):
                 self.logText("Number of cycles is larger than powers specified in the Parameters files")
                 return
-            self.logText("6")
             self.isNotStarted.clear()
             self.Laser.setPower(self.PowerArray[0])
             self.logText("Laser taper making started")
@@ -210,7 +205,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
                 if self.isNotStarted.isSet():
                     self.Laser.setOff()
                     self.isNotStarted.set()
-                    self.isNotStartedNumberOfCycleField.setText("Interrupted")
+                    self.NumberOfCycleField.setText("Interrupted")
                     self.logWarningText("Interrupted")
                     return
                 self.NumberOfCycleField.setText(str(math.floor(i/ 2 + 1)) + " half")
@@ -263,6 +258,13 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             fname = QtWidgets.QFileDialog().getOpenFileName()[0]
             self.ParametersFileName = fname
             self.logText("Opened: " + fname)
+            with open(self.ParametersFileName,'r') as f:
+                Dict=json.load(f)
+                number_of_cycles,delta_S, aver_S, t_1,self.PowerArray =Dict['number_of_cycles'],Dict['delta_S'],Dict['aver_S'],Dict['t_1'],np.array(Dict['PowerArray'])
+                self.logText('Loaded: '+ str(Dict))
+            self.NumberOfCyclesField.setText(str(number_of_cycles))
+            self.a2,self.v2,self.s2,self.a1,self.v1,self.s1=self.calculateStageSpeed(delta_S, aver_S, t_1)
+            #Аркадий здесь поменял местами индексы, так как в калкуляторе нарушено соответсвие, что первому индексу соответсвует большая скорость
         except:
             self.logWarningText(str(sys.exc_info()[1]))
 

@@ -40,6 +40,9 @@ class Ui_MainWindow(object):
         self.NumberOfCyclesLabel.setObjectName("NumberOfCyclesLabel")
         self.NumberOfCyclesLayout.addWidget(self.NumberOfCyclesLabel)
         self.NumberOfCyclesField = QtWidgets.QLineEdit(self.formLayoutWidget)
+        self.NumberOfCyclesField.setEnabled(False)
+        self.NumberOfCyclesField.setText("")
+        self.NumberOfCyclesField.setReadOnly(True)
         self.NumberOfCyclesField.setObjectName("NumberOfCyclesField")
         self.NumberOfCyclesLayout.addWidget(self.NumberOfCyclesField)
         self.LaserControlLayout.setLayout(1, QtWidgets.QFormLayout.FieldRole, self.NumberOfCyclesLayout)
@@ -160,13 +163,12 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "Taper Making UI v.2 .12(01.06.2021)"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Taper Maker V ... date ...."))
         self.LaserControlBox.setTitle(_translate("MainWindow", "Taping controll"))
         self.StartStopButton.setText(_translate("MainWindow", "Start/stop"))
         self.FileBox.setText(_translate("MainWindow", "Please select file"))
         self.StretchButton.setText(_translate("MainWindow", "Stretch"))
         self.NumberOfCyclesLabel.setText(_translate("MainWindow", "Total number of cycles:"))
-        self.NumberOfCyclesField.setText(_translate("MainWindow", "19"))
         self.NumberOfCycleLabel.setText(_translate("MainWindow", "Number of cylce:"))
         self.SetToTenButton.setText(_translate("MainWindow", "Set to 10%"))
         self.MoveOutButton.setText(_translate("MainWindow", "Move out"))

@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Taper Maker V ... date ....</string>
+   <string>Taper Making UI v.2 .11(15.02.2021)</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QGroupBox" name="LaserControlBox">
@@ -74,11 +74,8 @@
         </item>
         <item>
          <widget class="QLineEdit" name="NumberOfCyclesField">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
           <property name="text">
-           <string/>
+           <string>19</string>
           </property>
           <property name="readOnly">
            <bool>true</bool>
