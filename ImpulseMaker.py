@@ -12,6 +12,9 @@ from common.Common import Worker, CommonClass
 from packaging import version
 from conda import __version__ as condaVersion
 
+_version_='1.0'
+_date_='09.06.21'
+
 class MplCanvas(FigureCanvasQTAgg):
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         fig = Figure(figsize=(width, height), dpi=dpi)
@@ -35,6 +38,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
          CommonClass.__init__(self)
          ui.Ui_MainWindow.__init__(self)
          self.setupUi(self) 
+         self.setWindowTitle("ImpulseMaker V. "+_version_+', date  ' + _date_)
          self.isNotStarted = threading.Event()
          self.isNotStarted.set()        
 
@@ -309,8 +313,8 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             Tperiod = self.periodSpinBox.value()
             self.isNotStarted.clear()
 
-            Laser.setMode('MANCLOSED')
-            Laser.setPower(power)
+            self.Laser.setMode('MANCLOSED')
+            self.Laser.setPower(power)
 
             self.Shutter.setMode(1)
             if self.Shutter.getToggle() == "1":

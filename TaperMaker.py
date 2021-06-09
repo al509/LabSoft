@@ -21,7 +21,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
         CommonClass.__init__(self)
         ui.Ui_MainWindow.__init__(self)
         self.setupUi(self)
-        self.setWindowTitle("Taper Maker V. "+_version_+', date  ' + _date_)
+        self.setWindowTitle("TaperMaker V. "+_version_+', date  ' + _date_)
         
         self.isNotStarted = threading.Event()
         self.isNotStarted.set()
