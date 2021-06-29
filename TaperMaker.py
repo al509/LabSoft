@@ -1,6 +1,4 @@
 ﻿from PyQt5 import QtCore, QtWidgets
-
-
 import sys
 import numpy as np
 import threading
@@ -10,8 +8,7 @@ import json
 import math
 import time
 from common.Common import Worker, CommonClass
-from packaging import version
-from conda import __version__ as condaVersion
+
 
 _version_='2.13'
 _date_='08.06.21'
@@ -315,5 +312,3 @@ if __name__ == '__main__':
     
     main = MainApp()
     main.show()
-    if (version.parse(condaVersion) > version.parse("4.9.0")):
-        sys.exit(app.exec())

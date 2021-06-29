@@ -54,7 +54,6 @@ class CommonClass(QMainWindow):
         except:
             self.logWarningText("Motor not initialized :"+str(sys.exc_info()[1]))
             self.LogField.append("")
- # Закончил тут 
         
   
     def stagesToZerosClicked(self):

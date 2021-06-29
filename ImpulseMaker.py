@@ -1,21 +1,27 @@
-DEBUG = False
-import os, sys, time, threading, importlib
-from pathlib import Path
-from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtWidgets import QTableWidgetItem
-from PyQt5.QtWidgets import QFileDialog
-from ui import IM as ui
-import numpy as np
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT as NavigationToolbar
-from matplotlib.figure import Figure
+import importlib
+import threading
+import time
+import sys
+import os
+from im_classes.CustomTable import CustomTable
 from common.Common import Worker, CommonClass
-from packaging import version
-from conda import __version__ as condaVersion
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT as NavigationToolbar
+import numpy as np
+from ui import IM as ui
+from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtWidgets import QTableWidgetItem
+from PyQt5 import QtCore, QtWidgets
+from pathlib import Path
+DEBUG = False
+
 
 _version_='1.0'
 _date_='09.06.21'
 
 class MplCanvas(FigureCanvasQTAgg):
+    '''Canvas for combining matplotlib plots and qt graphics'''
+
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = fig.add_subplot(111)
@@ -42,9 +48,9 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
          self.isNotStarted = threading.Event()
          self.isNotStarted.set()        
 
+         self.tableWidget = CustomTable(self.tab)
          self.setupButtons()
          self.setupBox()
-         self.setupTable()
 
 
          # Start to detect equipment
@@ -97,7 +103,6 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             # Trigger the canvas to update and redraw.
             self.canvas.draw()
 
-
     def interfaceBlock(self, flag):
         '''Block the interface while the shooting proccess running'''
         blk = not flag
@@ -120,35 +125,36 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
 
     def setupButtons(self):
         '''Connect all buttons to their functions'''
-        self.manualConnectionBox.stateChanged.connect(self.manualConnectionClicked)
+        self.manualConnectionBox.stateChanged.connect(
+            self.manualConnectionClicked)
         self.AutoDetectButton.clicked.connect(self.autoDetectClicked)
         self.manualConnectButton.clicked.connect(self.manualConnectClicked)
-        self.StagesToZerosButton.clicked.connect(lambda: self.runThread(self.stagesToZerosClicked))
-        self.StagesToHomeButton.clicked.connect(lambda: self.runThread(self.stagesToHomeClicked))
-        self.MoveStagesButton.clicked.connect(lambda: self.runThread(self.moveStagesClicked))
+        self.StagesToZerosButton.clicked.connect(
+            lambda: self.runThread(self.stagesToZerosClicked))
+        self.StagesToHomeButton.clicked.connect(
+            lambda: self.runThread(self.stagesToHomeClicked))
+        self.MoveStagesButton.clicked.connect(
+            lambda: self.runThread(self.moveStagesClicked))
         self.startButton.clicked.connect(self.startClicked)
         self.fileButton.clicked.connect(self.fileClicked)
-        self.startAnnealButton.clicked.connect(lambda: self.runThread(self.startAnneal))
+        self.startAnnealButton.clicked.connect(
+            lambda: self.runThread(self.startAnneal))
         self.toggleShutterButton.clicked.connect(self.toggleShutter)
         self.saveButton.clicked.connect(self.saveConfig)
         self.tableWidget.cellChanged.connect(self.cellChangeHandler)
-        self.tableWidget.cellActivated.connect(self.insertRow)
         self.tabWidget.currentChanged.connect(self.update_plot)
-        self.generateArrayButton.clicked.connect(self.generateArray)   
+        self.generateArrayButton.clicked.connect(self.generateArray)
         self.inputERVButton.clicked.connect(self.corLoadERV)
         self.inputIMSButton.clicked.connect(self.corLoadIMS)
         self.zeroLevelBox.valueChanged.connect(self.corrRecalc)
-        self.zeroLevelSlider.valueChanged.connect(lambda: self.zeroLevelBox.setValue(float(self.zeroLevelBox.minimum() + self.zeroLevelSlider.value()*(self.zeroLevelBox.maximum()-self.zeroLevelBox.minimum())/100)))
-        self.x0Slider.valueChanged.connect(lambda: self.x0Box.setValue(self.x0Slider.value()))
+        self.zeroLevelSlider.valueChanged.connect(lambda: self.zeroLevelBox.setValue(float(self.zeroLevelBox.minimum(
+        ) + self.zeroLevelSlider.value()*(self.zeroLevelBox.maximum()-self.zeroLevelBox.minimum())/100)))
+        self.x0Slider.valueChanged.connect(
+            lambda: self.x0Box.setValue(self.x0Slider.value()))
         self.calcCorrectionButton.clicked.connect(self.correct)
         self.x0Box.valueChanged.connect(self.corrRecalc)
-
-
-    def setupTable(self):
-        '''Setup the table in the "Main features" tab'''
-        self.tableWidget.setColumnCount(2)
-        self.tableWidget.setRowCount(1)
-        self.tableWidget.setHorizontalHeaderLabels(["Coordinate", "Number of shots"])
+        self.radiusButton.toggled.connect(lambda: self.tableWidget.changeMode(
+            self.shotsButton.isChecked()))
 
     def manualConnectionClicked(self):
         '''Change the "Conection" box when the "Manual connection" (un)checked'''
@@ -166,11 +172,11 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             self.ConnectionBox.setGeometry(QtCore.QRect(10, 20, 211, 121))
 
     def fileClicked(self):
-        '''Load all parameters from the file''' 
+        '''Load all parameters from the file'''
         try:
 
             filepath = QFileDialog.getOpenFileName(self, "Open File", self.filedir,
-                                        "Impulse Maker savefile (*.ims)")[0]
+                                                   "Impulse Maker savefile (*.ims)")[0]
 
             self.filedir = str(Path(filepath).parent)
             if filepath == "":
@@ -184,8 +190,8 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
 
             params = f.readline().split()
             self.powerSpinBox.setValue(float(params[0]))
-            self.openSpinBox.setValue(float(params[1]))
-            self.periodSpinBox.setValue(float(params[2]))
+            self.openSpinBox.setValue(int(params[1]))
+            self.periodSpinBox.setValue(int(params[2]))
 
             params = f.readline().split()
             self.annealPowerBox.setValue(float(params[0]))
@@ -215,14 +221,14 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             self.fileEdit.setText(filename)
             self.logText("Successfully loaded configuration file " + filename)
         except:
-             self.logWarningText("File loading failed: "
-                                 + str(sys.exc_info()[1]))
+            self.logWarningText("File loading failed: "
+                                + str(sys.exc_info()[1]))
 
     def saveConfig(self):
         '''Save all parameters to the file'''
         try:
             filepath = QFileDialog.getSaveFileName(self, "Open File", self.filedir,
-                                        "Impulse Maker savefile (*.ims)")[0]
+                                                   "Impulse Maker savefile (*.ims)")[0]
 
             self.filedir = str(Path(filepath).parent)
 
@@ -242,7 +248,6 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             f.write(str(self.annealPowerBox.value()) + " ")
             f.write(str(self.annealSpeedBox.value()))
 
-
             for i in range(0, num_lines):
                 x_item = self.tableWidget.item(i, 0)
                 n_item = self.tableWidget.item(i, 1)
@@ -253,22 +258,23 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             f.write(str(self.endPosBox.value()) + " ")
             f.write(str(self.stepFuncBox.value()) + "\n")
 
-            lines_code =  self.codeBowser.toPlainText().split('\n')
+            lines_code = self.codeBowser.toPlainText().split('\n')
             num_lines_code = len(lines_code)
             f.write(str(num_lines_code) + "\n")
             f.write(self.codeBowser.toPlainText())
 
             f.close()
             self.fileEdit.setText(filename)
-            self.logText("Successfully saved the configuration file " + filename)
+            self.logText(
+                "Successfully saved the configuration file " + filename)
         except AttributeError:
             self.logWarningText("File saving failed: incorrect number of rows."
-                               + " Make sure that all rows filled")
+                                + " Make sure that all rows filled")
             f.close()
         except:
-             self.logWarningText("File saving failed: "
-                                 + str(sys.exc_info()[1]))
-             f.close()
+            self.logWarningText("File saving failed: "
+                                + str(sys.exc_info()[1]))
+            f.close()
 
     def startAnneal(self):
         try:
@@ -285,7 +291,8 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             self.logText("Moving to the start position")
             self.Motor.set_velocity_parameters(0, 10, self.motorDefaultSpeed)
             self.Motor.move_to(start_pos, True)
-            self.Motor.set_velocity_parameters(0, 10, self.annealSpeedBox.value())
+            self.Motor.set_velocity_parameters(
+                0, 10, self.annealSpeedBox.value())
 
             self.Laser.setOn()
             self.logText("Starting to burn")
@@ -300,9 +307,8 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
                 self.Laser.setOff()
             except:
                 pass
-            self.logWarningText("Process failed: "+ str(sys.exc_info()[1]))
+            self.logWarningText("Process failed: " + str(sys.exc_info()[1]))
             self.interfaceBlock(False)
-
 
     def start(self):
         try:
@@ -354,12 +360,12 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             self.startBlock(False)
         except AttributeError:
             self.logWarningText("Looks like there are empty values" +
-                               "in coordinates list. Process stopped.")
+                                "in coordinates list. Process stopped.")
             self.Laser.setOff()
             self.interfaceBlock(False)
             self.isNotStarted.set()
         except:
-            self.logWarningText("Process failed: "+ str(sys.exc_info()[1]))
+            self.logWarningText("Process failed: " + str(sys.exc_info()[1]))
             self.isNotStarted.set()
             self.startBlock(False)
             try:
@@ -380,7 +386,6 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
         except:
             self.logWarningText(str(sys.exc_info()[1]))
 
-
     def cellChangeHandler(self, row, collumn):
         try:
 
@@ -394,22 +399,13 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
                 self.tableWidget.setItem(row, 1, QTableWidgetItem(""))
                 return
 
-            x =x_item.text()
+            x = x_item.text()
             n = n_item.text()
 
             if x == "" and n == "" and self.tableWidget.rowCount() != 1:
                 self.tableWidget.removeRow(row)
         except ValueError:
-            self.logWarningText("Process failed: "+ str(sys.exc_info()[1]))
-
-    def insertRow(self, row, collumn):
-        self.tableWidget.insertRow(row+1)
-
-        x_item = QTableWidgetItem("0")
-        n_item = QTableWidgetItem("0")
-        self.tableWidget.setItem(row+1, 0, x_item)
-        self.tableWidget.setItem(row+1, 1, n_item)
-
+            self.logWarningText("Process failed: " + str(sys.exc_info()[1]))
 
     def generateArray(self):
         try:
@@ -419,7 +415,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             num = int((end_pos - start_pos)/step + 1)
             xs = np.linspace(start_pos, end_pos, num)
 
-            lines =  self.codeBowser.toPlainText().split('\n')
+            lines = self.codeBowser.toPlainText().split('\n')
             with open("temp.py", "w") as f:
                 f.write("def func(x):\n")
                 for line in lines:
@@ -442,130 +438,131 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
 
             self.logText("Array generated")
         except ValueError:
-             self.logWarningText(str(sys.exc_info()[1]))
-             
-             
+            self.logWarningText(str(sys.exc_info()[1]))
+
     def loadShotsFromIms(self, filename):
         f = open(filename, 'r')
-    
+
         numLines = int(f.readline())
         shotsArray = np.zeros((numLines, 2))
         f.readline()
         f.readline()
         for i in range(0, numLines):
             line = f.readline().split()
-            shotsArray[i,0]=float(line[0]) 
-            shotsArray[i,1]=int(line[1])
-        
+            shotsArray[i, 0] = float(line[0])
+            shotsArray[i, 1] = int(line[1])
+
         f.close()
-    
+
         return shotsArray
-    
+
     def corrRecalc(self):
-        try:    
-            ERVarray = np.loadtxt(self.inputERVEdit.text())[:,:2]    #   scan array
-            
+        try:
+            ERVarray = np.loadtxt(self.inputERVEdit.text())[
+                :, :2]  # scan array
 
-            
-            
             self.ERVcanvas.axes.cla()  # Clear the canvas.
-            self.ERVcanvas.axes.plot(ERVarray[:,0],ERVarray[:,1], 'b')
-            self.ERVcanvas.axes.axhline(self.zeroLevelBox.value(),color='green', ls='--', lw=1)
-            self.ERVcanvas.axes.axvline(self.x0Box.value(),color='red',ls='--', lw = 1)
+            self.ERVcanvas.axes.plot(ERVarray[:, 0], ERVarray[:, 1], 'b')
+            self.ERVcanvas.axes.axhline(
+                self.zeroLevelBox.value(), color='green', ls='--', lw=1)
+            self.ERVcanvas.axes.axvline(
+                self.x0Box.value(), color='red', ls='--', lw=1)
             self.ERVcanvas.draw()
-            
-            if self.inputIMSEdit.text() != "":
-                
-                IMSarray = self.loadShotsFromIms(self.inputIMSEdit.text())  # shots array
-                ERVmod = ERVarray[ERVarray[:,1] > self.zeroLevelBox.value()]    # only modified points
-                x_n = (ERVmod[:,0] * self.stepsInMm) + (IMSarray[0,0] - self.x0Box.value()* self.stepsInMm)
 
+            if self.inputIMSEdit.text() != "":
+
+                IMSarray = self.loadShotsFromIms(
+                    self.inputIMSEdit.text())  # shots array
+                # only modified points
+                ERVmod = ERVarray[ERVarray[:, 1] > self.zeroLevelBox.value()]
+                x_n = (ERVmod[:, 0] * self.stepsInMm) + \
+                    (IMSarray[0, 0] - self.x0Box.value() * self.stepsInMm)
 
                 y = np.empty(len(IMSarray))
 
                 for i in range(len(IMSarray)):
-                    cor = np.argmin(abs(IMSarray[i,0] - x_n))
-                    y[i] = ERVmod[cor,1]    # ERV coordinates. corresponding to x points
+                    cor = np.argmin(abs(IMSarray[i, 0] - x_n))
+                    # ERV coordinates. corresponding to x points
+                    y[i] = ERVmod[cor, 1]
 
-                y_n = (y - self.zeroLevelBox.value())/np.mean((y-self.zeroLevelBox.value())/IMSarray[:,1]) # ERV Y points in IMS coordinates
-                
-                y_new= IMSarray[:,1] + max(y_n - IMSarray[:,1])
+                # ERV Y points in IMS coordinates
+                y_n = (y - self.zeroLevelBox.value()) / \
+                    np.mean((y-self.zeroLevelBox.value())/IMSarray[:, 1])
+
+                y_new = IMSarray[:, 1] + max(y_n - IMSarray[:, 1])
 
                 y_corr = np.round(y_new-y_n)
 
-                            
                 self.corCanvas.axes.cla()  # Clear the canvas.
-                self.corCanvas.axes.plot(IMSarray[:,0],IMSarray[:,1], 'b')
-                self.corCanvas.axes.plot(IMSarray[:,0],y_n, 'g')
-                self.corCanvas.axes.plot(IMSarray[:,0],y_new, '--g')
+                self.corCanvas.axes.plot(IMSarray[:, 0], IMSarray[:, 1], 'b')
+                self.corCanvas.axes.plot(IMSarray[:, 0], y_n, 'g')
+                self.corCanvas.axes.plot(IMSarray[:, 0], y_new, '--g')
                 self.corCanvas.draw()
-                
-                return (IMSarray[:,0],y_corr)
-            
+
+                return (IMSarray[:, 0], y_corr)
+
         except:
             self.logWarningText(str(sys.exc_info()[1]))
-        
-    def IMSredraw(self):        
+
+    def IMSredraw(self):
         shotsArray = self.loadShotsFromIms(self.inputIMSEdit.text())
-        
+
         self.corCanvas.axes.cla()  # Clear the canvas.
-        self.corCanvas.axes.plot(shotsArray[:,0],shotsArray[:,1], 'b')
+        self.corCanvas.axes.plot(shotsArray[:, 0], shotsArray[:, 1], 'b')
         self.corCanvas.draw()
-        
+
         if self.inputERVEdit.text() != "":
             self.corrRecalc()
-        
+
     def corLoadERV(self):
         try:
             filepath = QFileDialog.getOpenFileName(self, "Open File", self.ERVdir,
-                                        "ERV data file (*.txt)")[0]
+                                                   "ERV data file (*.txt)")[0]
 
             self.ERVdir = str(Path(filepath).parent)
             if filepath == "":
                 self.logText("File load aborted")
                 return
             self.inputERVEdit.setText(filepath)
-            
-            ERVarray = np.loadtxt(self.inputERVEdit.text())[:,:2]
-            
-            self.x0Slider.setMinimum(ERVarray[0,0])
-            self.x0Box.setMinimum(ERVarray[0,0])
-            self.x0Slider.setMaximum(int(ERVarray[-1,0]))
-            self.x0Box.setMaximum(int(ERVarray[-1,0]))
-            
-            self.x0Slider.setValue(ERVarray[0,0] + 60/2.5)
-            
-    
-           
-            self.zeroLevelBox.setMinimum(np.nanmin(ERVarray[:,1]))                                 
-            self.zeroLevelBox.setMaximum(np.nanmax(ERVarray[:,1]))
-            
-            self.zeroLevelBox.setValue((np.nanmax(ERVarray[:,1])+np.nanmin(ERVarray[:,1]))/2)
-            
-            
+
+            ERVarray = np.loadtxt(self.inputERVEdit.text())[:, :2]
+
+            self.x0Slider.setMinimum(ERVarray[0, 0])
+            self.x0Box.setMinimum(ERVarray[0, 0])
+            self.x0Slider.setMaximum(int(ERVarray[-1, 0]))
+            self.x0Box.setMaximum(int(ERVarray[-1, 0]))
+
+            self.x0Slider.setValue(ERVarray[0, 0] + 60/2.5)
+
+            self.zeroLevelBox.setMinimum(np.nanmin(ERVarray[:, 1]))
+            self.zeroLevelBox.setMaximum(np.nanmax(ERVarray[:, 1]))
+
+            self.zeroLevelBox.setValue(
+                (np.nanmax(ERVarray[:, 1])+np.nanmin(ERVarray[:, 1]))/2)
+
             self.corrRecalc()
         except:
-             self.logWarningText(str(sys.exc_info()[1]))
-             
+            self.logWarningText(str(sys.exc_info()[1]))
+
     def corLoadIMS(self):
         try:
             filepath = QFileDialog.getOpenFileName(self, "Open File", self.IMSdir,
-                                        "IMS data file (*.ims)")[0]
+                                                   "IMS data file (*.ims)")[0]
 
             self.IMSdir = str(Path(filepath).parent)
             if filepath == "":
                 self.logText("File load aborted")
                 return
             self.inputIMSEdit.setText(filepath)
-            
+
             self.IMSredraw()
         except:
-             self.logWarningText(str(sys.exc_info()[1]))
-             
-        
+            self.logWarningText(str(sys.exc_info()[1]))
+
     def correct(self):
         try:
             corArray = self.corrRecalc()
+            print(corArray)
             num_lines = len(corArray[0])
             self.tableWidget.setRowCount(num_lines)
             for i in range(0, num_lines):
@@ -573,7 +570,8 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
                 n_item = QTableWidgetItem(str(int(corArray[1][i])))
                 self.tableWidget.setItem(i, 0, x_item)
                 self.tableWidget.setItem(i, 1, n_item)
-            self.logText("Array generated successfully. See 'Main features' and 'N(x)' tabs for details")
+            self.logText(
+                "Array generated successfully. See 'Main features' and 'N(x)' tabs for details")
         except:
             self.logWarningText(str(sys.exc_info()[1]))
 
@@ -597,12 +595,11 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             self.Laser.close()
             self.Shutter.sc._file.close()
             apt._cleanup()
-            print ("Cleared")
+            print("Cleared")
         except NameError:
             pass
         except:
             print(str(sys.exc_info()[1]))
-
 
 
 def main():
@@ -611,11 +608,9 @@ def main():
     else:
         app = QtWidgets.QApplication.instance()
 
-
     main = MainApp()
     main.show()
-    if (version.parse(condaVersion) > version.parse("4.9.0")):
-        sys.exit(app.exec())
+    # sys.exit(app.exec()) # Uncomment for inline graphics mode in Spyder
     return main
 
 
