@@ -10,8 +10,8 @@ import time
 from common.Common import Worker, CommonClass
 
 
-_version_='2.13'
-_date_='08.06.21'
+_version_='Test 2.14'
+_date_='18.06.21'
 
 class MainApp(CommonClass, ui.Ui_MainWindow):
     def __init__(self):
@@ -39,6 +39,9 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
         self.s2 = 3 ## mm
         self.t_stop = 0.12
         self.stretchButtonClickedN = 0
+        
+        self.Home_value1 = 95
+        self.Home_value2 = 30
 
         self.ParametersFileName="Parameters_standard.txt"
 
@@ -48,6 +51,11 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
         self.worker1 = Worker(self.stagesButtonClicked)
         self.threadpool.start(self.worker1)
         self.threadpool.start(self.worker2)
+        
+        try:
+            if self.Shutter.getToggle()=='1':
+                self.OpenShutter.setChecked(True)
+        except: pass 
         
     def calculateStageSpeed(self,delta_S,aver_S,t_1):
         S_1=aver_S-delta_S/2
@@ -78,8 +86,9 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
         self.StartStopButton.clicked.connect(self.startStopButtonClicked)
         self.StretchButton.clicked.connect(self.stretchButtonClicked)
         self.FileBox.clicked.connect(self.fileBoxClicked)
-        self.SetToTenButton.clicked.connect(self.SetToTenClicked)
+        self.TurnLaserOnButton.clicked.connect(self.TurnLaserOnClicked)
         self.MoveOutButton.clicked.connect(self.moveOutClicked)
+        self.OpenShutter.clicked.connect(self.OpenShutterClicked)
 
         self.MoveLeftStageLeftButton.clicked.connect(lambda :self.moveSingleStage(motor1,-float(self.MoveLeftStageField.text())))
         self.MoveLeftStageRightButton.clicked.connect(lambda :self.moveSingleStage(motor1,float(self.MoveLeftStageField.text())))
@@ -140,11 +149,10 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             motor1.set_velocity_parameters(0, 3.5, 4.5)
             motor2.set_velocity_parameters(0, 3.5, 4.5)
 
-            Home_value1 = 95
-            Home_value2 = 30
 
-            motor1.move_to(Home_value1, False)
-            motor2.move_to(Home_value2, True)
+
+            motor1.move_to(self.Home_value1, False)
+            motor2.move_to(self.Home_value2, True)
             self.logText('Stages moved to start position')
         except:
             self.logWarningText(str(sys.exc_info()[1]))
@@ -257,7 +265,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             self.logText("Opened: " + fname)
             with open(self.ParametersFileName,'r') as f:
                 Dict=json.load(f)
-                number_of_cycles,delta_S, aver_S, t_1,self.PowerArray =Dict['number_of_cycles'],Dict['delta_S'],Dict['aver_S'],Dict['t_1'],np.array(Dict['PowerArray'])
+                self.Home_value1,self.Home_value2,number_of_cycles,delta_S, aver_S, t_1,self.PowerArray =Dict['left_stage_home'],Dict['right_stage_home'],Dict['number_of_cycles'],Dict['delta_S'],Dict['aver_S'],Dict['t_1'],np.array(Dict['PowerArray'])
                 self.logText('Loaded: '+ str(Dict))
             self.NumberOfCyclesField.setText(str(number_of_cycles))
             self.a2,self.v2,self.s2,self.a1,self.v1,self.s1=self.calculateStageSpeed(delta_S, aver_S, t_1)
@@ -272,17 +280,21 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
         except:
             self.logWarningText(str(sys.exc_info()[1]))
 
-    def SetToTenClicked(self):
+    def TurnLaserOnClicked(self):
         try:
             if self.isChecking == True:
                 self.Laser.setOff()
                 self.logText("Laser turned off")
                 self.isChecking = False
-                self.Laser.setPower(10)
+                self.TurnLaserOnButton.setChecked(False)
+                #self.Laser.setPower()
             else:
+                self.Laser.setPower(int(self.LaserPower.text()))
+                time.sleep(0.1)
                 self.Laser.setOn()
-                self.logText("Laser set to 10%")
+                self.logText("Laser set on")
                 self.isChecking = True
+                self.TurnLaserOnButton.setChecked(True)
         except:
             self.logWarningText(str(sys.exc_info()[1]))
 
@@ -296,7 +308,14 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             self.logText('Stages moved out')
         except:
             self.logWarningText(str(sys.exc_info()[1]))
-
+            
+    def OpenShutterClicked(self):
+        if self.Shutter.getToggle() == "0":
+            self.Shutter.setToggle()
+            self.OpenShutter.setChecked(True)
+        else:
+            self.Shutter.setToggle()
+            self.OpenShutter.setChecked(False)
 
 # def main():
 

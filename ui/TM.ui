@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>737</width>
-    <height>519</height>
+    <height>501</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,8 +19,8 @@
      <rect>
       <x>290</x>
       <y>180</y>
-      <width>331</width>
-      <height>211</height>
+      <width>361</width>
+      <height>221</height>
      </rect>
     </property>
     <property name="title">
@@ -37,11 +37,20 @@
       <rect>
        <x>30</x>
        <y>19</y>
-       <width>291</width>
-       <height>193</height>
+       <width>321</width>
+       <height>247</height>
       </rect>
      </property>
      <layout class="QFormLayout" name="LaserControlLayout">
+      <property name="fieldGrowthPolicy">
+       <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+      </property>
+      <property name="rowWrapPolicy">
+       <enum>QFormLayout::DontWrapRows</enum>
+      </property>
+      <property name="verticalSpacing">
+       <number>6</number>
+      </property>
       <item row="0" column="0">
        <widget class="QPushButton" name="StartStopButton">
         <property name="text">
@@ -87,31 +96,51 @@
         </item>
        </layout>
       </item>
-      <item row="2" column="0">
+      <item row="3" column="0">
        <widget class="QLabel" name="NumberOfCycleLabel">
         <property name="text">
          <string>Number of cylce:</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
+      <item row="3" column="1">
        <widget class="QLabel" name="NumberOfCycleField">
         <property name="text">
          <string/>
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
-       <widget class="QPushButton" name="SetToTenButton">
+      <item row="5" column="0">
+       <widget class="QPushButton" name="TurnLaserOnButton">
         <property name="text">
-         <string>Set to 10%</string>
+         <string>Set Laser On</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
-      <item row="4" column="0">
+      <item row="6" column="0">
        <widget class="QPushButton" name="MoveOutButton">
         <property name="text">
          <string>Move out</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QLineEdit" name="LaserPower">
+        <property name="text">
+         <string>5</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0">
+       <widget class="QPushButton" name="OpenShutter">
+        <property name="text">
+         <string>Open shutter</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -299,8 +328,8 @@
      <rect>
       <x>50</x>
       <y>30</y>
-      <width>211</width>
-      <height>121</height>
+      <width>221</width>
+      <height>141</height>
      </rect>
     </property>
     <property name="title">
@@ -312,7 +341,7 @@
        <x>10</x>
        <y>19</y>
        <width>191</width>
-       <height>131</height>
+       <height>149</height>
       </rect>
      </property>
      <layout class="QVBoxLayout" name="ConnectionLayout">
@@ -391,7 +420,7 @@
      <x>0</x>
      <y>0</y>
      <width>737</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
   </widget>
