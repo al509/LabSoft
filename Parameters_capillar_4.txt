@@ -1,0 +1,1 @@
+{"left_stage_home": 95, "right_stage_home": 90,"number_of_cycles": 12, "delta_S": 1, "aver_S": 10, "t_1": 13.25, "PowerArray": [25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25,25,25,25,25,25,25,25,25,25,25,25,25]}

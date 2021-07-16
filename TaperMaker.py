@@ -1,4 +1,4 @@
-ï»¿from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtWidgets
 import sys
 import numpy as np
 import threading
@@ -10,8 +10,8 @@ import time
 from common.Common import Worker, CommonClass
 
 
-_version_='Test 2.14'
-_date_='18.06.21'
+_version_='2.15'
+_date_='16.07.21'
 
 class MainApp(CommonClass, ui.Ui_MainWindow):
     def __init__(self):
@@ -76,6 +76,32 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
         S_22= V_2*t_1
         S_2=S_22+S_21
         return a_1,V_1,S_1, a_2,V_2,S_2
+    
+    def check_consistency_of_sequence(self):
+        if len(self.PowerArray)<(int(self.NumberOfCyclesField.text())*2):
+            self.logText("Number of cycles is larger than powers specified in the Parameters files")
+            return
+        motor1_position=self.Home_value1
+        motor2_position=self.Home_value2
+        i = 1
+        while(i <= int(self.NumberOfCyclesField.text()) * 2):
+            motor1.set_velocity_parameters(0, self.a1, self.v1)
+            motor2.set_velocity_parameters(0, self.a2, self.v2)
+            motor1_position=motor1_position-self.s1
+            motor2_position=motor2_position+self.s2
+            i+=1
+            motor1_position=motor1_position+self.s2
+            motor2_position=motor2_position-self.s1
+            i += 1
+            if motor1_position>100 or motor1_position<0:
+                self.logWarningText('Procedure has errors: left stage would be out of range') 
+                return
+            if motor2_position>100 or motor2_position<0:
+                self.logWarningText('Procedure has errors: right stage would be out of range') 
+                return
+        self.logText("Procedure is OK")
+
+        
         
         
     def setupButtons(self):
@@ -269,7 +295,8 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
                 self.logText('Loaded: '+ str(Dict))
             self.NumberOfCyclesField.setText(str(number_of_cycles))
             self.a2,self.v2,self.s2,self.a1,self.v1,self.s1=self.calculateStageSpeed(delta_S, aver_S, t_1)
-            #ÐÑ€ÐºÐ°Ð´Ð¸Ð¹ Ð·Ð´ÐµÑÑŒ Ð¿Ð¾Ð¼ÐµÐ½ÑÐ» Ð¼ÐµÑÑ‚Ð°Ð¼Ð¸ Ð¸Ð½Ð´ÐµÐºÑÑ‹, Ñ‚Ð°Ðº ÐºÐ°Ðº Ð² ÐºÐ°Ð»ÐºÑƒÐ»ÑÑ‚Ð¾Ñ€Ðµ Ð½Ð°Ñ€ÑƒÑˆÐµÐ½Ð¾ ÑÐ¾Ð¾Ñ‚Ð²ÐµÑ‚ÑÐ²Ð¸Ðµ, Ñ‡Ñ‚Ð¾ Ð¿ÐµÑ€Ð²Ð¾Ð¼Ñƒ Ð¸Ð½Ð´ÐµÐºÑÑƒ ÑÐ¾Ð¾Ñ‚Ð²ÐµÑ‚ÑÐ²ÑƒÐµÑ‚ Ð±Ð¾Ð»ÑŒÑˆÐ°Ñ ÑÐºÐ¾Ñ€Ð¾ÑÑ‚ÑŒ
+            self.check_consistency_of_sequence()
+            #Àðêàäèé çäåñü ïîìåíÿë ìåñòàìè èíäåêñû, òàê êàê â êàëêóëÿòîðå íàðóøåíî ñîîòâåòñâèå, ÷òî ïåðâîìó èíäåêñó ñîîòâåòñâóåò áîëüøàÿ ñêîðîñòü
         except:
             self.logWarningText(str(sys.exc_info()[1]))
 
