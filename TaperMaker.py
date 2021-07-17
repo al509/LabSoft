@@ -10,8 +10,8 @@ import time
 from common.Common import Worker, CommonClass
 
 
-_version_='2.15'
-_date_='16.07.21'
+_version_='2.16'
+_date_='17.07.21'
 
 class MainApp(CommonClass, ui.Ui_MainWindow):
     def __init__(self):
@@ -85,19 +85,23 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
         motor2_position=self.Home_value2
         i = 1
         while(i <= int(self.NumberOfCyclesField.text()) * 2):
-            motor1.set_velocity_parameters(0, self.a1, self.v1)
-            motor2.set_velocity_parameters(0, self.a2, self.v2)
             motor1_position=motor1_position-self.s1
             motor2_position=motor2_position+self.s2
-            i+=1
+            i += 1
+            if motor1_position>100 or motor1_position<0:
+                self.logWarningText('Procedure has errors: left stage would be out of range at half step={}, position={}'.format(i,motor1_position)) 
+                return
+            if motor2_position>100 or motor2_position<0:
+                self.logWarningText('Procedure has errors: right stage would be out of range at half step={},position={}'.format(i,motor2_position))
+                return
             motor1_position=motor1_position+self.s2
             motor2_position=motor2_position-self.s1
             i += 1
             if motor1_position>100 or motor1_position<0:
-                self.logWarningText('Procedure has errors: left stage would be out of range') 
+                self.logWarningText('Procedure has errors: left stage would be out of range at half step={}, position={}'.format(i,motor1_position)) 
                 return
             if motor2_position>100 or motor2_position<0:
-                self.logWarningText('Procedure has errors: right stage would be out of range') 
+                self.logWarningText('Procedure has errors: right stage would be out of range at half step={}, position={}'.format(i,motor2_position)) 
                 return
         self.logText("Procedure is OK")
 
@@ -291,7 +295,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             self.logText("Opened: " + fname)
             with open(self.ParametersFileName,'r') as f:
                 Dict=json.load(f)
-                self.Home_value1,self.Home_value2,number_of_cycles,delta_S, aver_S, t_1,self.PowerArray =Dict['left_stage_home'],Dict['right_stage_home'],Dict['number_of_cycles'],Dict['delta_S'],Dict['aver_S'],Dict['t_1'],np.array(Dict['PowerArray'])
+                self.timeToHeatUpTube, self.Home_value1,self.Home_value2,number_of_cycles,delta_S, aver_S, t_1,self.PowerArray=Dict['heat_up_time'],Dict['left_stage_home'],Dict['right_stage_home'],Dict['number_of_cycles'],Dict['delta_S'],Dict['aver_S'],Dict['t_1'],np.array(Dict['PowerArray'])
                 self.logText('Loaded: '+ str(Dict))
             self.NumberOfCyclesField.setText(str(number_of_cycles))
             self.a2,self.v2,self.s2,self.a1,self.v1,self.s1=self.calculateStageSpeed(delta_S, aver_S, t_1)
