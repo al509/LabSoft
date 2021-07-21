@@ -52,7 +52,6 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
          self.setupButtons()
          self.setupBox()
 
-
          # Start to detect equipment
          self.threadpool.start(self.worker1)
          self.threadpool.start(self.worker2)
@@ -352,7 +351,8 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
                 self.logText("Processing coordinate "
                              + str(x) + " with " + str(n) + " times")
                 self.Motor.move_to(x, True)
-                self.shutUp(n, Topen, Tperiod - Topen)
+                if n>0:
+                    self.shutUp(n, Topen, Tperiod - Topen)
 
             self.Laser.setOff()
             self.logText("Completed")

@@ -3,6 +3,7 @@ from PyQt5 import QtCore, QtWidgets
 from serial import SerialException
 from PyQt5.QtWidgets import QMainWindow
 import sys
+import os
 from libs import SynradLaser, SC10Shutter
 import serial.tools.list_ports
 
@@ -45,12 +46,11 @@ class CommonClass(QMainWindow):
 
     def setupMotor(self):
         try:
-
-             import thorlabs_apt as apt
-             self.Motor = apt.Motor(90864301)
-             self.Motor.set_move_home_parameters(2, 1, 7.0, 0.0001)
-             self.logText("Motor initialized")
-             self.LogField.append("")
+            import libs.thorlabs_apt as apt
+            self.Motor = apt.Motor(90864301)
+            self.Motor.set_move_home_parameters(2, 1, 7.0, 0.0001)
+            self.logText("Motor initialized")
+            self.LogField.append("")
         except:
             self.logWarningText("Motor not initialized :"+str(sys.exc_info()[1]))
             self.LogField.append("")

@@ -52,7 +52,9 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
         self.threadpool.start(self.worker1)
         self.threadpool.start(self.worker2)
         
+        
         try:
+            self.Shutter.setMode(1)
             if self.Shutter.getToggle()=='1':
                 self.OpenShutter.setChecked(True)
         except: pass 

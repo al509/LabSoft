@@ -20,7 +20,10 @@ How to use this modude (examples):
 
 """
 
-import instruments as ik
+try:
+    import instruments as ik
+except ModuleNotFoundError:
+    print('ModuleNotFoundError: No module named _instruments_. Consider installing "instrumentkit" module')
 
 class Shutter:
     """
