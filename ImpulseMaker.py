@@ -3,21 +3,24 @@ import threading
 import time
 import sys
 import os
+from pathlib import Path
+import numpy as np
+import json
+
 from im_classes.CustomTable import CustomTable
 from common.Common import Worker, CommonClass
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT as NavigationToolbar
-import numpy as np
 from ui import IM as ui
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtWidgets import QTableWidgetItem
 from PyQt5 import QtCore, QtWidgets
-from pathlib import Path
+
 DEBUG = False
 
 
-_version_='1.0'
-_date_='09.06.21'
+_version_='1.11'
+_date_='03.08.21'
 
 class MplCanvas(FigureCanvasQTAgg):
     '''Canvas for combining matplotlib plots and qt graphics'''
@@ -39,6 +42,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
          self.filedir = "saves"
          self.ERVdir = "."
          self.IMSdir = "."
+         self.conversionFilePath = "."
         
          # Run initialization
          CommonClass.__init__(self)
@@ -73,6 +77,8 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
          self.corCanvas = MplCanvas(self, dpi=70)        
          corLayout = QtWidgets.QGridLayout(self.correctionView)
          corLayout.addWidget(self.corCanvas)
+         
+         
 
     def update_plot(self):
         '''
@@ -153,7 +159,9 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
         self.calcCorrectionButton.clicked.connect(self.correct)
         self.x0Box.valueChanged.connect(self.corrRecalc)
         self.radiusButton.toggled.connect(lambda: self.tableWidget.changeMode(
-            self.shotsButton.isChecked()))
+            self.shotsButton.isChecked())) # TODO: rename button to appropriate label
+        self.modFileButton.clicked.connect(self.setConversionFilePath)
+        self.conversionButton.clicked.connect(self.startConversion)
 
     def manualConnectionClicked(self):
         '''Change the "Conection" box when the "Manual connection" (un)checked'''
@@ -203,6 +211,10 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
                 n_item = QTableWidgetItem(columns[1])
                 self.tableWidget.setItem(i, 0, x_item)
                 self.tableWidget.setItem(i, 1, n_item)
+                
+                r_item = QTableWidgetItem(None)
+                self.tableWidget.setItem(i, 2, r_item)
+                
 
             params = f.readline().split()
             self.startPosBox.setValue(float(params[0]))
@@ -215,6 +227,8 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
                 code = code + f.readline()
             self.codeBowser.setFontPointSize(12)
             self.codeBowser.setPlainText(code)
+            
+            self.tableWidget.changeMode(self.shotsButton.isChecked())
 
             f.close()
             self.fileEdit.setText(filename)
@@ -589,8 +603,50 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
         self.Shutter.setCloseTime(Tclose)
         self.Shutter.setToggle()
         time.sleep(N * (Topen + Tclose)/1000)
+        
+    def setConversionFilePath(self):
+        try:
+            filepath = QFileDialog.getOpenFileName(self, "Open File", 
+                        self.conversionFilePath,"Multiple JEN file (*.mjen)")[0]
+            self.modFileEdit.setText(filepath.split('/')[-1])
+            self.conversionFilePath = filepath
+            self.logText("MJEN file path successfully set")
+            
+        except:
+            self.logWarningText("MJEN File path not set: " + str(sys.exc_info()[1]))
 
-    def __del__(self):
+    def startConversion(self):
+        try:
+            with open(self.conversionFilePath, 'r') as file:
+                conversionFile = json.load(file)
+                
+        # TODO: laser/file parameters check with a popup warning if needed
+            d = conversionFile["dR_avg(N)"]
+            if self.radiusButton.isChecked(): # dReff -> N Conversion
+                dRtable = np.array([i['dR_avg'] for i in d])
+                for i in range(self.tableWidget.rowCount()):
+                    dR = float(self.tableWidget.item(i, 2).text())
+                    # find closest to each dr
+                    closestInd = np.argmin(np.abs(dRtable-dR))
+                    #fill the value into the table
+                    nItem = QTableWidgetItem(str(d[closestInd]['N_shots']))
+                    self.tableWidget.setItem(i, 1, nItem)
+            else: # N -> dReff conversion
+                Ntable = np.array([i['N_shots'] for i in d])
+                for i in range(self.tableWidget.rowCount()):
+                    N = float(self.tableWidget.item(i, 1).text())
+                    # find closest to each dr
+                    closestInd = np.argmin(np.abs(Ntable-N))
+                    #fill the value into the table
+                    dRitem = QTableWidgetItem(str(d[closestInd]['dR_avg']))
+                    self.tableWidget.setItem(i, 2, dRitem)
+            
+            self.tableWidget.changeMode(self.shotsButton.isChecked())
+            self.logText("Conversion succeed")
+        except:
+            self.logWarningText(f'Conversion failed: {str(sys.exc_info()[1])}')
+
+    def __del__(self): #TODO: change to close event?
         try:
             self.Laser.close()
             self.Shutter.sc._file.close()
@@ -600,6 +656,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             pass
         except:
             print(str(sys.exc_info()[1]))
+            
 
 
 def main():
