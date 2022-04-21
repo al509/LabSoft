@@ -5,12 +5,15 @@ import sys
 import os
 from pathlib import Path
 import numpy as np
+from scipy.interpolate import interp1d
 import json
 
 from im_classes.CustomTable import CustomTable
 from common.Common import Worker, CommonClass
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT as NavigationToolbar
+import matplotlib.pyplot as plt
+
 from ui import IM as ui
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtWidgets import QTableWidgetItem
@@ -19,8 +22,8 @@ from PyQt5 import QtCore, QtWidgets
 DEBUG = False
 
 
-_version_='1.11'
-_date_='03.08.21'
+_version_='2.0'
+_date_='04.21.22'
 
 class MplCanvas(FigureCanvasQTAgg):
     '''Canvas for combining matplotlib plots and qt graphics'''
@@ -28,6 +31,7 @@ class MplCanvas(FigureCanvasQTAgg):
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = fig.add_subplot(111)
+        self.axes_2=self.axes.twinx()
         super(MplCanvas, self).__init__(fig)
 
 
@@ -60,7 +64,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
          self.threadpool.start(self.worker1)
          self.threadpool.start(self.worker2)
 
-         #define plot for function generator        
+         #define plotы for function generator        
          self.canvas = MplCanvas(self, width=5, height=4, dpi=100)
          toolbar = NavigationToolbar(self.canvas, self)
 
@@ -68,7 +72,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
          layout.addWidget(toolbar)
          layout.addWidget(self.canvas)
          
-         #definie  ERV plot for correction
+         #define  ERV plot for correction
          self.ERVcanvas = MplCanvas(self, dpi=70)        
          ERVlayout = QtWidgets.QGridLayout(self.ERVView)
          ERVlayout.addWidget(self.ERVcanvas)
@@ -78,7 +82,11 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
          corLayout = QtWidgets.QGridLayout(self.correctionView)
          corLayout.addWidget(self.corCanvas)
          
+         #define interpolation scipy objects for calibration R_eff<->N_shots
+         self.N_to_dR=None
+         self.dR_to_N=None
          
+          
 
     def update_plot(self):
         '''
@@ -91,22 +99,43 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
 
         '''
         if self.tabWidget.currentIndex() == 1 and self.tableWidget.rowCount() > 1:
-            xdata = []
-            ydata = []
-            num_lines = self.tableWidget.rowCount()
-            for i in range(0, num_lines):
-                x_item = self.tableWidget.item(i, 0)
-                n_item = self.tableWidget.item(i, 1)
-                x = float(x_item.text())
-                n = int(n_item.text())
+            try:
+                x_data = []
+                N_data = []
+                dR_data=[]
+                num_lines = self.tableWidget.rowCount()
+                # if self.
+                for i in range(0, num_lines):
+                    x_item = self.tableWidget.item(i, 0)
+                    n_item = self.tableWidget.item(i, 1)
+                    dR_item = self.tableWidget.item(i, 2)
+                    x = float(x_item.text())
+                    try:
+                        n = int(n_item.text())
+                    except ValueError:
+                        n=0
+                    try:
+                        dR= float(dR_item.text())
+                    except ValueError:
+                        dR=0
 
-                xdata.append(x)
-                ydata.append(n)
-
-            self.canvas.axes.cla()  # Clear the canvas.
-            self.canvas.axes.plot(xdata, ydata, 'r')
-            # Trigger the canvas to update and redraw.
-            self.canvas.draw()
+    
+                    x_data.append(x)
+                    N_data.append(n)
+                    dR_data.append(dR)
+    
+                self.canvas.axes.cla()  # Clear the canvas.
+                self.canvas.axes_2.cla()  # Clear the canvas.
+                self.canvas.axes.plot(x_data, N_data, 'r')
+                self.canvas.axes.set_xlabel('x')
+                self.canvas.axes.set_ylabel('$N_{shots}$', color='r')
+                self.canvas.axes_2.plot(x_data,dR_data,'b')
+                self.canvas.axes_2.set_ylabel('$dR$', color='b')
+                
+                # Trigger the canvas to update and redraw.
+                self.canvas.draw()
+            except:
+                self.logWarningText("Plotting failed: " + str(sys.exc_info()[1]))
 
     def interfaceBlock(self, flag):
         '''Block the interface while the shooting proccess running'''
@@ -160,7 +189,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
         self.x0Box.valueChanged.connect(self.corrRecalc)
         self.radiusButton.toggled.connect(lambda: self.tableWidget.changeMode(
             self.shotsButton.isChecked())) # TODO: rename button to appropriate label
-        self.modFileButton.clicked.connect(self.setConversionFilePath)
+        self.modFileButton.clicked.connect(self.setConversionFile)
         self.conversionButton.clicked.connect(self.startConversion)
 
     def manualConnectionClicked(self):
@@ -434,7 +463,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
                 f.write("def func(x):\n")
                 for line in lines:
                     f.write("\t" + line + "\n")
-                f.write("\treturn int(n)")
+                f.write("\treturn round(f,3)")
                 f.close()
 
             if "temp" in sys.modules:
@@ -443,11 +472,18 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
                 self.module = importlib.import_module("temp")
 
             self.tableWidget.setRowCount(num)
-            for i in range(0, num):
-                x_item = QTableWidgetItem(str(xs[i]))
-                n_item = QTableWidgetItem(str(self.module.func(xs[i])))
-                self.tableWidget.setItem(i, 0, x_item)
-                self.tableWidget.setItem(i, 1, n_item)
+            if self.radiusButton.isChecked():
+                for i in range(0, num):
+                    x_item = QTableWidgetItem(str(xs[i]))
+                    r_item = QTableWidgetItem(str(self.module.func(xs[i])))
+                    self.tableWidget.setItem(i, 0, x_item)
+                    self.tableWidget.setItem(i, 2, r_item)
+            else:
+                for i in range(0, num):
+                    x_item = QTableWidgetItem(str(xs[i]))
+                    n_item = QTableWidgetItem(str(int(self.module.func(xs[i]))))
+                    self.tableWidget.setItem(i, 0, x_item)
+                    self.tableWidget.setItem(i, 1, n_item)
             os.remove("temp.py")
 
             self.logText("Array generated")
@@ -484,7 +520,6 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             self.ERVcanvas.draw()
 
             if self.inputIMSEdit.text() != "":
-
                 IMSarray = self.loadShotsFromIms(
                     self.inputIMSEdit.text())  # shots array
                 # only modified points
@@ -604,47 +639,80 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
         self.Shutter.setToggle()
         time.sleep(N * (Topen + Tclose)/1000)
         
-    def setConversionFilePath(self):
+    def setConversionFile(self):
         try:
             filepath = QFileDialog.getOpenFileName(self, "Open File", 
                         self.conversionFilePath,"Multiple JEN file (*.mjen)")[0]
             self.modFileEdit.setText(filepath.split('/')[-1])
             self.conversionFilePath = filepath
-            self.logText("MJEN file path successfully set")
+            
             
         except:
             self.logWarningText("MJEN File path not set: " + str(sys.exc_info()[1]))
-
-    def startConversion(self):
         try:
             with open(self.conversionFilePath, 'r') as file:
                 conversionFile = json.load(file)
-                
-        # TODO: laser/file parameters check with a popup warning if needed
             d = conversionFile["dR_avg(N)"]
+            dRtable = np.array([[i['N_shots'],i['dR_avg']] for i in d])
+            plt.figure()
+            plt.title('Calibration curve, P={} %, T={} ms'.format(conversionFile['laser_power'],conversionFile['open_time']))
+            plt.plot(dRtable[:,0],dRtable[:,1],'o')
+            plt.xlabel('$N_{shots}$')
+            plt.ylabel('$\Delta R_{eff}$, nm')
+            self.logText("Calibration successfully set")
+            self.N_to_dR = interp1d(dRtable[:,0], dRtable[:,1],fill_value='extrapolate')
+            self.dR_to_N = interp1d(dRtable[:,1], dRtable[:,0],fill_value='extrapolate')
+            n_array=np.linspace(0,max(dRtable[:,0]),100)
+            plt.plot(n_array,self.N_to_dR(n_array))
+        except:
+            self.logWarningText(f'Wrong calibration file : {str(sys.exc_info()[1])}')
+            
+
+    def startConversion(self):
+        try:
             if self.radiusButton.isChecked(): # dReff -> N Conversion
-                dRtable = np.array([i['dR_avg'] for i in d])
                 for i in range(self.tableWidget.rowCount()):
                     dR = float(self.tableWidget.item(i, 2).text())
-                    # find closest to each dr
-                    closestInd = np.argmin(np.abs(dRtable-dR))
-                    #fill the value into the table
-                    nItem = QTableWidgetItem(str(d[closestInd]['N_shots']))
-                    self.tableWidget.setItem(i, 1, nItem)
+                    self.tableWidget.setItem(i, 1, QTableWidgetItem(str(np.round(self.dR_to_N(dR),3))))
             else: # N -> dReff conversion
-                Ntable = np.array([i['N_shots'] for i in d])
                 for i in range(self.tableWidget.rowCount()):
                     N = float(self.tableWidget.item(i, 1).text())
-                    # find closest to each dr
-                    closestInd = np.argmin(np.abs(Ntable-N))
-                    #fill the value into the table
-                    dRitem = QTableWidgetItem(str(d[closestInd]['dR_avg']))
-                    self.tableWidget.setItem(i, 2, dRitem)
+                    self.tableWidget.setItem(i, 2, QTableWidgetItem(str(np.round(self.N_to_dR(N),3))))
             
             self.tableWidget.changeMode(self.shotsButton.isChecked())
             self.logText("Conversion succeed")
         except:
             self.logWarningText(f'Conversion failed: {str(sys.exc_info()[1])}')
+        
+        # try:
+        #     with open(self.conversionFilePath, 'r') as file:
+        #         conversionFile = json.load(file)
+                
+        # # TODO: laser/file parameters check with a popup warning if needed
+        #     d = conversionFile["dR_avg(N)"]
+        #     if self.radiusButton.isChecked(): # dReff -> N Conversion
+        #         dRtable = np.array([i['dR_avg'] for i in d])
+        #         for i in range(self.tableWidget.rowCount()):
+        #             dR = float(self.tableWidget.item(i, 2).text())
+        #             # find closest to each dr
+        #             closestInd = np.argmin(np.abs(dRtable-dR))
+        #             #fill the value into the table
+        #             nItem = QTableWidgetItem(str(d[closestInd]['N_shots']))
+        #             self.tableWidget.setItem(i, 1, nItem)
+        #     else: # N -> dReff conversion
+        #         Ntable = np.array([i['N_shots'] for i in d])
+        #         for i in range(self.tableWidget.rowCount()):
+        #             N = float(self.tableWidget.item(i, 1).text())
+        #             # find closest to each dr
+        #             closestInd = np.argmin(np.abs(Ntable-N))
+        #             #fill the value into the table
+        #             dRitem = QTableWidgetItem(str(d[closestInd]['dR_avg']))
+        #             self.tableWidget.setItem(i, 2, dRitem)
+            
+        #     self.tableWidget.changeMode(self.shotsButton.isChecked())
+        #     self.logText("Conversion succeed")
+        # except:
+        #     self.logWarningText(f'Conversion failed: {str(sys.exc_info()[1])}')
 
     def __del__(self): #TODO: change to close event?
         try:

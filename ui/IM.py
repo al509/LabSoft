@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\Александр\Desktop\work\6. Impulse maker\ImpulseMaker 3.0\ui\IM.ui'
+# Form implementation generated from reading ui file 'IM.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
@@ -14,6 +14,7 @@ class Ui_MainWindow(object):
         MainWindow.resize(800, 600)
         MainWindow.setMinimumSize(QtCore.QSize(800, 600))
         MainWindow.setMaximumSize(QtCore.QSize(800, 600))
+        MainWindow.setAcceptDrops(False)
         MainWindow.setToolTip("")
         MainWindow.setStatusTip("")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
@@ -213,11 +214,11 @@ class Ui_MainWindow(object):
         self.modTypeLabel.setObjectName("modTypeLabel")
         self.modTypeLayout.setWidget(0, QtWidgets.QFormLayout.SpanningRole, self.modTypeLabel)
         self.radiusButton = QtWidgets.QRadioButton(self.formLayoutWidget_3)
-        self.radiusButton.setChecked(True)
+        self.radiusButton.setChecked(False)
         self.radiusButton.setObjectName("radiusButton")
         self.modTypeLayout.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.radiusButton)
         self.shotsButton = QtWidgets.QRadioButton(self.formLayoutWidget_3)
-        self.shotsButton.setChecked(False)
+        self.shotsButton.setChecked(True)
         self.shotsButton.setAutoExclusive(True)
         self.shotsButton.setObjectName("shotsButton")
         self.modTypeLayout.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.shotsButton)
@@ -270,7 +271,7 @@ class Ui_MainWindow(object):
         self.startPosLayout.setObjectName("startPosLayout")
         self.startPosBox = QtWidgets.QDoubleSpinBox(self.formLayoutWidget)
         self.startPosBox.setDecimals(3)
-        self.startPosBox.setProperty("value", 2.0)
+        self.startPosBox.setProperty("value", 57.0)
         self.startPosBox.setObjectName("startPosBox")
         self.startPosLayout.addWidget(self.startPosBox)
         self.startmmLabel = QtWidgets.QLabel(self.formLayoutWidget)
@@ -281,7 +282,7 @@ class Ui_MainWindow(object):
         self.endPosLayout.setObjectName("endPosLayout")
         self.endPosBox = QtWidgets.QDoubleSpinBox(self.formLayoutWidget)
         self.endPosBox.setDecimals(3)
-        self.endPosBox.setProperty("value", 3.0)
+        self.endPosBox.setProperty("value", 63.0)
         self.endPosBox.setObjectName("endPosBox")
         self.endPosLayout.addWidget(self.endPosBox)
         self.endmmLabel = QtWidgets.QLabel(self.formLayoutWidget)
@@ -421,7 +422,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "Impulse maker v0.9 (09.12.2020)"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Impulse maker"))
         self.ConnectionBox.setTitle(_translate("MainWindow", "Connection"))
         self.AutoDetectButton.setText(_translate("MainWindow", "AutoDetect"))
         self.manualConnectionBox.setText(_translate("MainWindow", "Manual"))
@@ -457,19 +458,21 @@ class Ui_MainWindow(object):
         self.modFileButton.setText(_translate("MainWindow", "..."))
         self.conversionButton.setText(_translate("MainWindow", "Calculate"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "Main features"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "N(x)"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "N(x),dR(x)"))
         self.codeBowser.setStatusTip(_translate("MainWindow", "\'def()\': and \'return\' parts not necessary. Indentation starts from zero level"))
         self.codeBowser.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:12pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"># Write n(x) function here in Python-stye. For example:</p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"># Write f(x) function here in Python-style. For example:</p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#000000;\">if x &gt; 60:</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#000000;\">    n = 1</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#000000;\">    f = 1</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#000000;\">else:</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#000000;\">    n = 0</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#000000;\">    f = 0</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#000000;\"># Consider that you are just writing some func(x) that returns n value.</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#000000;\">#Note that n truncates to int in the end; x can be float.</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#000000;\"># Note that f may be either number of shots (then truncated to int) or effective radius variation (then  #round(f,3) applied)</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#000000;\"># depending on settings in &quot;Main features&quot; window</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#000000;\"># x can be float.</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#000000;\"># Be careful, python-injections are posiible as this code interpreting</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#000000;\"># in program without any checks and changes.</span></p></body></html>"))
         self.startPosLabel.setText(_translate("MainWindow", "Start position:"))

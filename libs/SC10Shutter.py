@@ -94,7 +94,10 @@ class Shutter:
         **n:** Set repeat count n for repeat mode.
             The value *n* must be from 1 to 99.
         """
-        self.sc.sendcmd("rep="+str(n))
+        if n<100:
+            self.sc.sendcmd("rep="+str(n))
+        else:
+            print('Repeat count must be from 1 to 99')
 
     def getRepeat(self) -> str:
         """Return the repeat count."""

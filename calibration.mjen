@@ -1,5 +1,8 @@
 {
-    "laser_params": null,
+"date":"01.09.2020",
+"laser_power": 19,
+	"open_time":100,
+	"close_time":2200,
     "dR_avg(N)": [
 	{
             "N_shots": 10,

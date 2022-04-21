@@ -13,7 +13,7 @@ class CustomTable(QTableWidget):
         self.setGeometry(QRect(10, 10, 301, 371))
         self.setColumnCount(cols)
         self.setColumnWidth(2, 75)
-        self.changeMode() #  launch to get onShots value
+        self.changeMode(onShots=True) #  launch to get onShots value
         self.addRows([-1]*rows) # minus one because line inserted below given number
         self.setHorizontalHeaderLabels(["Coordinate","Number of shots",'ΔR effective'])
         self.setStatusTip("Click on the number of the row — select line (hold «Ctrl» " +
