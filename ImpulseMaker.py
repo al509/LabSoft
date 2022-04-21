@@ -112,11 +112,11 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
                     x = float(x_item.text())
                     try:
                         n = int(n_item.text())
-                    except ValueError:
+                    except:
                         n=0
                     try:
                         dR= float(dR_item.text())
-                    except ValueError:
+                    except:
                         dR=0
 
     
