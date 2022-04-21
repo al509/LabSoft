@@ -165,8 +165,8 @@
       <rect>
        <x>10</x>
        <y>10</y>
-       <width>191</width>
-       <height>139</height>
+       <width>210</width>
+       <height>156</height>
       </rect>
      </property>
      <layout class="QFormLayout" name="ParametersLayout">
@@ -371,7 +371,7 @@
          <x>10</x>
          <y>19</y>
          <width>197</width>
-         <height>89</height>
+         <height>94</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="annealLayout">
@@ -467,7 +467,7 @@
         <x>320</x>
         <y>0</y>
         <width>210</width>
-        <height>101</height>
+        <height>111</height>
        </rect>
       </property>
       <layout class="QFormLayout" name="modTypeLayout">
@@ -628,7 +628,7 @@ p, li { white-space: pre-wrap; }
             <number>3</number>
            </property>
            <property name="value">
-            <double>57.000000000000000</double>
+            <double>53.000000000000000</double>
            </property>
           </widget>
          </item>
@@ -649,7 +649,7 @@ p, li { white-space: pre-wrap; }
             <number>3</number>
            </property>
            <property name="value">
-            <double>63.000000000000000</double>
+            <double>75.000000000000000</double>
            </property>
           </widget>
          </item>
@@ -762,8 +762,8 @@ p, li { white-space: pre-wrap; }
        <rect>
         <x>10</x>
         <y>10</y>
-        <width>187</width>
-        <height>133</height>
+        <width>217</width>
+        <height>150</height>
        </rect>
       </property>
       <layout class="QFormLayout" name="correctionLayout">
@@ -940,7 +940,7 @@ p, li { white-space: pre-wrap; }
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
   </widget>

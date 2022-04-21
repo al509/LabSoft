@@ -337,7 +337,10 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
                 0, 10, self.annealSpeedBox.value())
 
             self.Laser.setOn()
+            self.logText("Heating laser...")
+            time.sleep(10)
             self.logText("Starting to burn")
+
             self.Shutter.setToggle()
             self.Motor.move_to(end_pos, True)
             self.Shutter.setToggle()
@@ -487,7 +490,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             os.remove("temp.py")
 
             self.logText("Array generated")
-        except ValueError:
+        except:
             self.logWarningText(str(sys.exc_info()[1]))
 
     def loadShotsFromIms(self, filename):
@@ -673,7 +676,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             if self.radiusButton.isChecked(): # dReff -> N Conversion
                 for i in range(self.tableWidget.rowCount()):
                     dR = float(self.tableWidget.item(i, 2).text())
-                    self.tableWidget.setItem(i, 1, QTableWidgetItem(str(np.round(self.dR_to_N(dR),3))))
+                    self.tableWidget.setItem(i, 1, QTableWidgetItem(str(int(self.dR_to_N(dR)))))
             else: # N -> dReff conversion
                 for i in range(self.tableWidget.rowCount()):
                     N = float(self.tableWidget.item(i, 1).text())
