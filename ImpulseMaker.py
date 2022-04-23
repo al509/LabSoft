@@ -22,8 +22,8 @@ from PyQt5 import QtCore, QtWidgets
 DEBUG = False
 
 
-_version_='2.0'
-_date_='04.21.22'
+_version_='2.1'
+_date_='24.04.2022'
 
 class MplCanvas(FigureCanvasQTAgg):
     '''Canvas for combining matplotlib plots and qt graphics'''
@@ -61,8 +61,9 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
          self.setupBox()
 
          # Start to detect equipment
-         self.threadpool.start(self.worker1)
-         self.threadpool.start(self.worker2)
+         if not DEBUG:
+            self.threadpool.start(self.worker1)
+            self.threadpool.start(self.worker2)
 
          #define plotы for function generator        
          self.canvas = MplCanvas(self, width=5, height=4, dpi=100)
@@ -356,7 +357,52 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             self.interfaceBlock(False)
 
     def start(self):
+        
+        def _create_working_table():
+            raw_table=[]
+            for i in range(0, self.tableWidget.rowCount()):
+                    x_item = self.tableWidget.item(i, 0)
+                    n_item = self.tableWidget.item(i, 1)
+                    x = (float(x_item.text()))
+                    n = (int(n_item.text()))
+                    raw_table.append([x,n])
+            if self.comboBox_proccesing_type.currentText()=='Point by point':
+                return raw_table
+            elif self.comboBox_proccesing_type.currentText()=='Slice by slice':
+                table=[]
+                forward_direction=True
+                while len(raw_table)>0:
+                    temp_table=[]
+                    i=0
+                    length=len(raw_table)
+                    while i<length:
+                        t=raw_table[i]
+                        if t[1]>1:
+                            raw_table[i][1]-=1
+                            temp_table.append([t[0],1])
+                        elif t[1]==1:
+                            raw_table.pop(i)
+                            temp_table.append([t[0],1])
+                            length-=1
+                            i-=1
+                        elif t[1]==0:
+                            raw_table.pop(i)
+                            length-=1
+                            i-=1
+                        i+=1
+                    if forward_direction:
+                        temp_table.sort(key=lambda x:x[0])
+                        forward_direction=not forward_direction
+                    else:
+                        temp_table.sort(key=lambda x:-x[0])
+                        forward_direction=not forward_direction
+                    table=table+temp_table
+                return table
+                
         try:
+            
+            table=_create_working_table()
+            print(table)
             self.startBlock(True)
 
             power = self.powerSpinBox.value()
@@ -382,7 +428,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
                 return
             self.logText("Laser heated. Starting process")
 
-            for i in range(0, self.tableWidget.rowCount()):
+            for t in table:
 
                 if self.isNotStarted.isSet():
                     self.Laser.setOff()
@@ -390,15 +436,11 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
                     self.startBlock(False)
                     return
 
-                x_item = self.tableWidget.item(i, 0)
-                n_item = self.tableWidget.item(i, 1)
-                x = (float(x_item.text()))
-                n = (int(n_item.text()))
                 self.logText("Processing coordinate "
-                             + str(x) + " with " + str(n) + " times")
-                self.Motor.move_to(x, True)
-                if n>0:
-                    self.shutUp(n, Topen, Tperiod - Topen)
+                              + str(t[0]) + " with " + str(t[1]) + " times")
+                self.Motor.move_to(t[0], True)
+                if t[1]>0:
+                    self.shutUp(t[1], Topen, Tperiod - Topen)
 
             self.Laser.setOff()
             self.logText("Completed")
@@ -418,7 +460,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
                 self.Laser.setOff()
             except:
                 pass
-
+        # 
     def startClicked(self):
         try:
             if self.isNotStarted.isSet() == False:

@@ -129,9 +129,9 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>440</y>
+      <y>460</y>
       <width>771</width>
-      <height>131</height>
+      <height>111</height>
      </rect>
     </property>
     <property name="title">
@@ -153,8 +153,8 @@
      <rect>
       <x>10</x>
       <y>300</y>
-      <width>211</width>
-      <height>141</height>
+      <width>221</width>
+      <height>161</height>
      </rect>
     </property>
     <property name="title">
@@ -357,7 +357,7 @@
       <property name="geometry">
        <rect>
         <x>320</x>
-        <y>110</y>
+        <y>150</y>
         <width>211</width>
         <height>111</height>
        </rect>
@@ -467,7 +467,7 @@
         <x>320</x>
         <y>0</y>
         <width>210</width>
-        <height>111</height>
+        <height>146</height>
        </rect>
       </property>
       <layout class="QFormLayout" name="modTypeLayout">
@@ -533,6 +533,27 @@
         <widget class="QPushButton" name="conversionButton">
          <property name="text">
           <string>Calculate</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QComboBox" name="comboBox_proccesing_type">
+         <item>
+          <property name="text">
+           <string>Point by point</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Slice by slice</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="modTypeLabel_2">
+         <property name="text">
+          <string>Processing:</string>
          </property>
         </widget>
        </item>
@@ -886,7 +907,7 @@ p, li { white-space: pre-wrap; }
      <rect>
       <x>10</x>
       <y>180</y>
-      <width>211</width>
+      <width>221</width>
       <height>121</height>
      </rect>
     </property>
@@ -898,7 +919,7 @@ p, li { white-space: pre-wrap; }
       <rect>
        <x>10</x>
        <y>20</y>
-       <width>191</width>
+       <width>211</width>
        <height>100</height>
       </rect>
      </property>
@@ -940,7 +961,7 @@ p, li { white-space: pre-wrap; }
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>
