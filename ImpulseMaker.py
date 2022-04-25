@@ -22,8 +22,8 @@ from PyQt5 import QtCore, QtWidgets
 DEBUG = False
 
 
-_version_='2.1'
-_date_='24.04.2022'
+_version_='2.2'
+_date_='25.04.2022'
 
 class MplCanvas(FigureCanvasQTAgg):
     '''Canvas for combining matplotlib plots and qt graphics'''
@@ -230,6 +230,10 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             self.openSpinBox.setValue(int(params[1]))
             self.periodSpinBox.setValue(int(params[2]))
 
+            params = f.readline()
+            params=params.rstrip('\n')   
+            self.comboBox_proccesing_type.setCurrentText(str(params))
+
             params = f.readline().split()
             self.annealPowerBox.setValue(float(params[0]))
             self.annealSpeedBox.setValue(float(params[1]))
@@ -287,7 +291,9 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             f.write(str(self.powerSpinBox.value()) + " ")
             f.write(str(self.openSpinBox.value()) + " ")
             f.write(str(self.periodSpinBox.value()) + "\n")
-
+            
+            f.write(str(self.comboBox_proccesing_type.currentText()) + "\n")
+            
             f.write(str(self.annealPowerBox.value()) + " ")
             f.write(str(self.annealSpeedBox.value()))
 
@@ -428,7 +434,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
                 return
             self.logText("Laser heated. Starting process")
 
-            for t in table:
+            for ind,t in enumerate(table):
 
                 if self.isNotStarted.isSet():
                     self.Laser.setOff()
@@ -436,8 +442,8 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
                     self.startBlock(False)
                     return
 
-                self.logText("Processing coordinate "
-                              + str(t[0]) + " with " + str(t[1]) + " times")
+                self.logText("Step "+str(ind)+" of " + str(len(table))+". Processing coordinate "
+                             + str(t[0]) + " with " + str(t[1]) + " times")
                 self.Motor.move_to(t[0], True)
                 if t[1]>0:
                     self.shutUp(t[1], Topen, Tperiod - Topen)
