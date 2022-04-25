@@ -22,7 +22,7 @@ from PyQt5 import QtCore, QtWidgets
 DEBUG = False
 
 
-_version_='2.2'
+_version_='2.3'
 _date_='25.04.2022'
 
 class MplCanvas(FigureCanvasQTAgg):
@@ -371,7 +371,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
                     n_item = self.tableWidget.item(i, 1)
                     x = (float(x_item.text()))
                     n = (int(n_item.text()))
-                    raw_table.append([x,n])
+                    raw_table.append([x,n,False])
             if self.comboBox_proccesing_type.currentText()=='Point by point':
                 return raw_table
             elif self.comboBox_proccesing_type.currentText()=='Slice by slice':
@@ -385,10 +385,10 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
                         t=raw_table[i]
                         if t[1]>1:
                             raw_table[i][1]-=1
-                            temp_table.append([t[0],1])
+                            temp_table.append([t[0],1,False])
                         elif t[1]==1:
                             raw_table.pop(i)
-                            temp_table.append([t[0],1])
+                            temp_table.append([t[0],1,False])
                             length-=1
                             i-=1
                         elif t[1]==0:
@@ -402,6 +402,7 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
                     else:
                         temp_table.sort(key=lambda x:-x[0])
                         forward_direction=not forward_direction
+                    temp_table[-1][2]=True
                     table=table+temp_table
                 return table
                 
@@ -447,6 +448,8 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
                 self.Motor.move_to(t[0], True)
                 if t[1]>0:
                     self.shutUp(t[1], Topen, Tperiod - Topen)
+                if t[2]: # in points where direction of processing changes
+                    time.sleep(1.5)
 
             self.Laser.setOff()
             self.logText("Completed")
