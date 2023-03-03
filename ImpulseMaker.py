@@ -22,8 +22,8 @@ from PyQt5 import QtCore, QtWidgets
 DEBUG = False
 
 
-_version_='2.3'
-_date_='25.04.2022'
+_version_='2.4'
+_date_='2023.03.03'
 
 class MplCanvas(FigureCanvasQTAgg):
     '''Canvas for combining matplotlib plots and qt graphics'''
@@ -330,8 +330,8 @@ class MainApp(CommonClass, ui.Ui_MainWindow):
             self.logText("Anneal started")
             self.interfaceBlock(True)
             self.startButton.setEnabled(True)
-            start_pos = 53
-            end_pos = 75
+            start_pos = self.annealStartPos.value()
+            end_pos = self.annealStopPos.value()
             self.Laser.setPower(self.annealPowerBox.value())
             self.Shutter.setMode(1)
             if self.Shutter.getToggle() == "1":

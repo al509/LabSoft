@@ -358,108 +358,154 @@
        <rect>
         <x>320</x>
         <y>150</y>
-        <width>211</width>
-        <height>111</height>
+        <width>184</width>
+        <height>142</height>
        </rect>
       </property>
       <property name="title">
        <string>Fiber annealing</string>
       </property>
-      <widget class="QWidget" name="verticalLayoutWidget_2">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>19</y>
-         <width>197</width>
-         <height>94</height>
-        </rect>
-       </property>
-       <layout class="QVBoxLayout" name="annealLayout">
-        <item>
-         <layout class="QHBoxLayout" name="annealPowerLayout" stretch="1,0,0">
-          <property name="spacing">
-           <number>6</number>
-          </property>
-          <item>
-           <widget class="QLabel" name="annealPowerLabel">
-            <property name="text">
-             <string>Laser power:</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QDoubleSpinBox" name="annealPowerBox">
-            <property name="decimals">
-             <number>1</number>
-            </property>
-            <property name="singleStep">
-             <double>0.500000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="annealPercentlabel">
-            <property name="layoutDirection">
-             <enum>Qt::LeftToRight</enum>
-            </property>
-            <property name="text">
-             <string>%     </string>
-            </property>
-            <property name="textFormat">
-             <enum>Qt::AutoText</enum>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="annealVelocityLayout" stretch="1,0,0">
-          <item>
-           <widget class="QLabel" name="annealVelocityLabel">
-            <property name="text">
-             <string>Motor velocity:</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QDoubleSpinBox" name="annealSpeedBox">
-            <property name="value">
-             <double>5.000000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="annealPercentLabel">
-            <property name="text">
-             <string>mm/s</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_2">
-          <item>
-           <widget class="QPushButton" name="toggleShutterButton">
-            <property name="text">
-             <string>Toggle shutter</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="startAnnealButton">
-            <property name="text">
-             <string>Start</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-       </layout>
-      </widget>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <layout class="QHBoxLayout" name="annealPowerLayout" stretch="1,0,0">
+         <property name="spacing">
+          <number>6</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="annealPowerLabel">
+           <property name="text">
+            <string>Laser power:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QDoubleSpinBox" name="annealPowerBox">
+           <property name="decimals">
+            <number>1</number>
+           </property>
+           <property name="singleStep">
+            <double>0.500000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="annealPercentlabel">
+           <property name="layoutDirection">
+            <enum>Qt::LeftToRight</enum>
+           </property>
+           <property name="text">
+            <string>%     </string>
+           </property>
+           <property name="textFormat">
+            <enum>Qt::AutoText</enum>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="annealVelocityLayout" stretch="1,0,0">
+         <item>
+          <widget class="QLabel" name="annealVelocityLabel">
+           <property name="text">
+            <string>Motor velocity:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QDoubleSpinBox" name="annealSpeedBox">
+           <property name="value">
+            <double>5.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="annealPercentLabel">
+           <property name="text">
+            <string>mm/s</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QLabel" name="annealVelocityLabel_2">
+           <property name="text">
+            <string>Start:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QDoubleSpinBox" name="annealStartPos">
+           <property name="decimals">
+            <number>1</number>
+           </property>
+           <property name="minimum">
+            <double>51.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>77.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.100000000000000</double>
+           </property>
+           <property name="value">
+            <double>53.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="annealVelocityLabel_3">
+           <property name="text">
+            <string>Stop</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QDoubleSpinBox" name="annealStopPos">
+           <property name="decimals">
+            <number>1</number>
+           </property>
+           <property name="minimum">
+            <double>51.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>77.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.100000000000000</double>
+           </property>
+           <property name="value">
+            <double>75.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <item>
+          <widget class="QPushButton" name="toggleShutterButton">
+           <property name="text">
+            <string>Toggle shutter</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="startAnnealButton">
+           <property name="text">
+            <string>Start</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
      </widget>
      <widget class="QWidget" name="formLayoutWidget_3">
       <property name="geometry">
