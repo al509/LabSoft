@@ -23,7 +23,7 @@ DEBUG = False
 
 
 _version_='2.4'
-_date_='2023.03.03'
+_date_='2023.03.06'
 
 class MplCanvas(FigureCanvasQTAgg):
     '''Canvas for combining matplotlib plots and qt graphics'''
