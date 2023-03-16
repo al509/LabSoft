@@ -22,8 +22,8 @@ from PyQt5 import QtCore, QtWidgets
 DEBUG = False
 
 
-_version_='2.4'
-_date_='2023.03.06'
+_version_='2.5'
+_date_='2023.03.16'
 
 class MplCanvas(FigureCanvasQTAgg):
     '''Canvas for combining matplotlib plots and qt graphics'''
